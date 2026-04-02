@@ -17,6 +17,11 @@ import {
   IntroPage,
   MatchTheFourPage,
   MimicryPage,
+  QuadrantsBookPage,
+  AxisAgencyFatePage,
+  AxisSelfIntactDissolvedPage,
+  AxesAssessmentPage,
+  ReflectionPage,
   VideoGroundingPage,
   type DemoMatchOutcomes,
 } from "@/sections"
@@ -79,13 +84,33 @@ export default function Home() {
   }, [])
 
   const finishVideoGrounding = useCallback(() => {
-    setPhase("intro")
+    setPhase("book")
   }, [])
 
   const startCourseFromIntro = useCallback(() => {
     clearDemoMatchOutcomesSession()
     setMatchOutcomes(initialDemoMatchOutcomes())
     setPhase("demoOutline")
+  }, [])
+
+  const goToAxisAgencyFate = useCallback(() => {
+    setPhase("axisAgencyFate")
+  }, [])
+
+  const goToAxisSelfIntactDissolved = useCallback(() => {
+    setPhase("axisSelfIntactDissolved")
+  }, [])
+
+  const goToAxesAssessment = useCallback(() => {
+    setPhase("axesAssessment")
+  }, [])
+
+  const goToReflection = useCallback(() => {
+    setPhase("reflection")
+  }, [])
+
+  const finishReflection = useCallback(() => {
+    setPhase("intro")
   }, [])
 
   let main: ReactNode
@@ -105,6 +130,16 @@ export default function Home() {
     main = <MatchTheFourPage outcomes={matchOutcomes} onContinue={goToVideoGrounding} />
   } else if (phase === "videoGrounding") {
     main = <VideoGroundingPage onContinue={finishVideoGrounding} />
+  } else if (phase === "book") {
+    main = <QuadrantsBookPage onContinue={goToAxisAgencyFate} />
+  } else if (phase === "axisAgencyFate") {
+    main = <AxisAgencyFatePage onContinue={goToAxisSelfIntactDissolved} />
+  } else if (phase === "axisSelfIntactDissolved") {
+    main = <AxisSelfIntactDissolvedPage onContinue={goToAxesAssessment} />
+  } else if (phase === "axesAssessment") {
+    main = <AxesAssessmentPage onContinue={goToReflection} />
+  } else if (phase === "reflection") {
+    main = <ReflectionPage onContinue={finishReflection} />
   } else {
     const _exhaustive: never = phase
     void _exhaustive

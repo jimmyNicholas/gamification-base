@@ -25,6 +25,11 @@ export type CoursePhase =
   | "chaos"
   | "matchTheFour"
   | "videoGrounding"
+  | "book"
+  | "axisAgencyFate"
+  | "axisSelfIntactDissolved"
+  | "axesAssessment"
+  | "reflection"
 
 const NAV_ITEMS: {
   phase: CoursePhase
@@ -47,6 +52,11 @@ const NAV_ITEMS: {
     label: "2.7 — Video Grounding",
     Icon: Video,
   },
+  { phase: "book", label: "Book (Quadrants)", Icon: LayoutGrid },
+  { phase: "axisAgencyFate", label: "Agency ↔ Fate", Icon: Dices },
+  { phase: "axisSelfIntactDissolved", label: "Self-intact ↔ Dissolved", Icon: Copy },
+  { phase: "axesAssessment", label: "A+ Assessment", Icon: Trophy },
+  { phase: "reflection", label: "Reflection", Icon: LayoutList },
 ]
 
 type CourseNavPanelProps = {

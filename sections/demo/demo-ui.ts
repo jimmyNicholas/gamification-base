@@ -36,6 +36,14 @@ export const demoPanelTitleClassName =
  */
 export const demoWideContentClassName = "mx-auto w-full max-w-[min(100%,3200px)]"
 
+/** Reusable desktop split: text / video / model = 30% / 30% / 40%. */
+export const demoContentModelSplitClassName =
+  "flex w-full flex-col gap-8 lg:grid lg:grid-cols-[30%_30%_40%] lg:items-start lg:gap-10 xl:gap-14"
+
+/** Reusable desktop split: content / model = 60% / 40%. */
+export const demoContentModelTwoPaneClassName =
+  "flex w-full flex-col gap-8 lg:grid lg:grid-cols-[60%_40%] lg:items-stretch lg:gap-10 xl:gap-14"
+
 /** Width cap + rounded frame + shadow shared by large demo stages. */
 export const demoStageShellCoreClassName =
   "relative w-full max-w-[min(100%,3200px)] overflow-hidden rounded-2xl border-2 shadow-[0_8px_28px_rgba(0,0,0,0.12)]"

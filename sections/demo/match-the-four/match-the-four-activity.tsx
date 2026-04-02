@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { ChanceWheelPreview } from "@/components/chance-wheel"
 import { MatchEmojiCard, MatchLabelCard } from "@/sections/demo/competition-activity/match-cards"
 import { ANIMAL_MATCH_DEMO } from "@/sections/demo/competition-activity/animal-match-demo"
+import { DemoTwoPaneLayout } from "@/sections/demo/demo-layout-primitives"
+import { QuadrantAxesModel } from "@/components/quadrant-axes-model"
 import type { DemoMatchOutcomes } from "./demo-match-outcomes"
 import { formatMmSs } from "@/lib/format-mm-ss"
 import { cn } from "@/lib/utils"
@@ -23,8 +25,24 @@ import {
 
 import { ChaosSkillsMicroArena } from "@/sections/demo/chaos/chaos-skills-micro-arena"
 import { MIMICRY_IMAGE_CACHE_BUST } from "@/sections/demo/mimicry/mimicry-scenario"
+import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 
 type CategoryId = "competition" | "chance" | "roleplay" | "chaos"
+
+/** Maps Match-the-Four categories to the 2x2 quadrants in the model. */
+const CATEGORY_TO_QUADRANT: Record<CategoryId, QuadrantId> = {
+  competition: "Q1", // agency + self-intact
+  chance: "Q3", // fate + self-intact
+  roleplay: "Q2", // agency + self-dissolved
+  chaos: "Q4", // fate + self-dissolved
+}
+
+const QUADRANT_MATCH_REVEAL_CARDS: Record<QuadrantId, { label: string; icon: string }> = {
+  Q1: { label: "competition", icon: "🏆" },
+  Q2: { label: "roleplay", icon: "🎭" },
+  Q3: { label: "chance", icon: "🎲" },
+  Q4: { label: "chaos", icon: "💥" },
+}
 
 const DEFAULT_ROLEPLAY_BERET_SRC = `/assets/mimicry/beret.png?v=${MIMICRY_IMAGE_CACHE_BUST}`
 
@@ -69,6 +87,9 @@ const LEFT_DEFS: LeftDef[] = [
   { id: "chaos-l-roleplay", matchId: "roleplay" },
   { id: "chaos-l-chaos", matchId: "chaos" },
 ]
+
+const MATCH_FOUR_LEFT_CARD_SIZE_CLASS = "w-[15.625rem] min-h-[15.625rem] max-w-[15.625rem]"
+const MATCH_FOUR_RIGHT_CARD_SIZE_CLASS = "w-[15.625rem] min-h-[15.625rem] max-w-[15.625rem]"
 
 function defaultRightItems(): RightItem[] {
   return LEFT_DEFS.map((l) => ({
@@ -180,6 +201,7 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
   const [selectedLeftId, setSelectedLeftId] = useState<string | null>(null)
   const [selectedRightId, setSelectedRightId] = useState<string | null>(null)
   const [matchedIds, setMatchedIds] = useState<Set<CategoryId>>(() => new Set())
+  const [revealedQuadrants, setRevealedQuadrants] = useState<Set<QuadrantId>>(() => new Set())
 
   const allMatched = matchedIds.size >= totalPairs
 
@@ -195,6 +217,12 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
     }
 
     if (left.matchId === right.matchId) {
+      const quadrant = CATEGORY_TO_QUADRANT[left.matchId]!
+      setRevealedQuadrants((prev) => {
+        const next = new Set(prev)
+        next.add(quadrant)
+        return next
+      })
       setMatchedIds((prev) => {
         const next = new Set(prev)
         next.add(left.matchId)
@@ -250,51 +278,65 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
 
   return (
     <div className={cn("flex w-full flex-col items-center gap-8", className)}>
-      <div className="mx-auto flex w-full max-w-4xl flex-col items-stretch gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-14">
-        <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-3 sm:gap-4 lg:justify-items-center">
-          {shuffledLeft.map((item, slot) => {
-            const slotKey = LEFT_SLOT_KEYS[slot] ?? "?"
-            const matched = matchedIds.has(item.matchId)
-            const { content: leftContent, ariaLabel } = buildLeftCard(outcomes, item.matchId)
-            return (
-              <div key={item.id} className="flex flex-col items-center">
-                <MatchEmojiCard
-                  content={leftContent}
-                  ariaLabel={ariaLabel}
-                  matched={matched}
-                  selected={!matched && selectedLeftId === item.id}
-                  onClick={matched ? undefined : () => toggleLeft(item.id)}
-                  keyHint={slotKey}
-                />
-              </div>
-            )
-          })}
-        </div>
+      <DemoTwoPaneLayout
+        content={
+          <div className="flex min-w-0 flex-col items-stretch gap-10 lg:h-full lg:flex-row lg:items-stretch lg:justify-between lg:gap-14">
+            <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-5 justify-items-center">
+              {shuffledLeft.map((item, slot) => {
+                const slotKey = LEFT_SLOT_KEYS[slot] ?? "?"
+                const matched = matchedIds.has(item.matchId)
+                const { content: leftContent, ariaLabel } = buildLeftCard(outcomes, item.matchId)
+                return (
+                  <div key={item.id} className="flex flex-col items-center justify-center">
+                    <MatchEmojiCard
+                      content={leftContent}
+                      ariaLabel={ariaLabel}
+                      matched={matched}
+                      selected={!matched && selectedLeftId === item.id}
+                      className={MATCH_FOUR_LEFT_CARD_SIZE_CLASS}
+                      onClick={matched ? undefined : () => toggleLeft(item.id)}
+                      keyHint={slotKey}
+                    />
+                  </div>
+                )
+              })}
+            </div>
 
-        <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-3 sm:gap-4 lg:justify-items-center">
-          {orderedRight.map((item, slot) => {
-            const matched = matchedIds.has(item.matchId)
-            const cat = CATEGORY[item.matchId]
-            const slotKey = RIGHT_SLOT_KEYS[slot] ?? "?"
-            const illustration = <CategoryIllustration matchId={item.matchId} />
-            return (
-              <div key={item.id} className="flex flex-col items-center">
-                <MatchLabelCard
-                  label={item.label}
-                  frameClassName={cat.frameClassName}
-                  unmatchedLeading={illustration}
-                  matched={matched}
-                  matchedSurfaceClassName={cat.matchedSurfaceClassName}
-                  matchedLeading={matched ? illustration : undefined}
-                  selected={selectedRightId === item.id}
-                  onClick={matched ? undefined : () => toggleRight(item.id)}
-                  keyHint={slotKey}
-                />
-              </div>
-            )
-          })}
-        </div>
-      </div>
+            <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-5 justify-items-center">
+              {orderedRight.map((item, slot) => {
+                const matched = matchedIds.has(item.matchId)
+                const cat = CATEGORY[item.matchId]
+                const slotKey = RIGHT_SLOT_KEYS[slot] ?? "?"
+                const illustration = <CategoryIllustration matchId={item.matchId} />
+                return (
+                  <div key={item.id} className="flex flex-col items-center justify-center">
+                    <MatchLabelCard
+                      label={item.label}
+                      frameClassName={cat.frameClassName}
+                      unmatchedLeading={illustration}
+                      matched={matched}
+                      matchedSurfaceClassName={cat.matchedSurfaceClassName}
+                      matchedLeading={undefined}
+                      selected={selectedRightId === item.id}
+                      className={cn(MATCH_FOUR_RIGHT_CARD_SIZE_CLASS, matched ? "invisible pointer-events-none" : undefined)}
+                      onClick={matched ? undefined : () => toggleRight(item.id)}
+                      keyHint={slotKey}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        }
+        model={
+          <QuadrantAxesModel
+            className="max-w-[620px]"
+            mode={revealedQuadrants.size === 0 ? "placeholderHidden" : "matchReveal"}
+            revealedQuadrants={revealedQuadrants}
+            matchRevealCards={QUADRANT_MATCH_REVEAL_CARDS}
+          />
+        }
+      />
 
       {allMatched ? (
         <div className="flex w-full max-w-lg flex-col items-center gap-5 px-2 text-center">

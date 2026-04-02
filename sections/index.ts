@@ -34,6 +34,19 @@ export {
   type VideoGroundingPageProps,
 } from "@/sections/demo/video-grounding/video-grounding-page"
 
+export { QuadrantsBookPage, type QuadrantsBookPageProps } from "@/sections/demo/quadrants-axes/quadrants-book-page"
+
+export { AxisAgencyFatePage, type AxisAgencyFatePageProps } from "@/sections/demo/quadrants-axes/axis-agency-fate-page"
+
+export {
+  AxisSelfIntactDissolvedPage,
+  type AxisSelfIntactDissolvedPageProps,
+} from "@/sections/demo/quadrants-axes/axis-self-intact-dissolved-page"
+
+export { AxesAssessmentPage, type AxesAssessmentPageProps } from "@/sections/demo/quadrants-axes/axes-assessment-page"
+
+export { ReflectionPage, type ReflectionPageProps } from "@/sections/demo/quadrants-axes/reflection-page"
+
 export {
   initialDemoMatchOutcomes,
   type DemoMatchOutcomes,
