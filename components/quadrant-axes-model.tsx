@@ -66,8 +66,9 @@ function axisIndexToPercent(index: AxisIndex): number {
 }
 
 function normalizeAxisState(state: AxisVisualState | QuadrantVisualState | undefined): AxisVisualState {
-  // Backward compatibility for older callers that passed "color"/"highlighted".
-  if (state === "color" || state === "highlighted" || state === "active") return "activeColor"
+  // Backward compatibility for older callers that passed "color"/"highlighted"/"active".
+  const s = state as string | undefined
+  if (s === "color" || s === "highlighted" || s === "active") return "activeColor"
   if (state === "inactive") return "inactiveGrey"
   if (state === "invisible" || state === "inactiveGrey" || state === "inactiveColor" || state === "activeColor") return state
   return "invisible"
@@ -108,7 +109,13 @@ function inferQuadrantPairForSingleAxis(focusAxis: AxisFocus, valueIndex: number
 }
 
 type BookCard = { front: string; back: string }
-type MatchRevealCard = { label: string; icon: React.ReactNode }
+
+/** Simple emoji + label, or a full custom tile (e.g. Match the Four outcome previews). */
+export type MatchRevealCard =
+  | { label: string; icon: React.ReactNode }
+  | { fullTile: React.ReactNode }
+
+export type MatchRevealTilePalette = "theme" | "plainWhite" | "neutralGrey"
 
 export type QuadrantAxesModelProps = {
   mode: ModelMode
@@ -124,6 +131,18 @@ export type QuadrantAxesModelProps = {
   bookCards?: Partial<Record<QuadrantId, BookCard>>
   // Used by match-reveal mode.
   matchRevealCards?: Partial<Record<QuadrantId, MatchRevealCard>>
+  /** Per display cell, which quadrant key to read from `matchRevealCards` (shuffle without moving axes). */
+  matchRevealContentSource?: Partial<Record<QuadrantId, QuadrantId>>
+  /** Tile chrome for match-reveal highlights (`theme` = quadrant colors). */
+  matchRevealTilePalette?: MatchRevealTilePalette
+  /**
+   * Recognition left column: tiles toggle selection on click (`selected` is a display cell id, Q1–Q4).
+   */
+  matchRevealSelection?: { selected: QuadrantId | null; onSelect: (cell: QuadrantId) => void }
+  /**
+   * Recognition right column: when true, each grey tile uses that cell’s quadrant border colour.
+   */
+  matchRevealCategoryBorders?: boolean
 
   // Used by the "controlled" (wireframe debugging) mode.
   quadrantStates?: Partial<Record<QuadrantId, QuadrantVisualState>>
@@ -142,6 +161,10 @@ export function QuadrantAxesModel({
   focusAxis = "horizontal",
   bookCards,
   matchRevealCards,
+  matchRevealContentSource,
+  matchRevealTilePalette = "theme",
+  matchRevealSelection,
+  matchRevealCategoryBorders = false,
   quadrantStates,
   axisStates,
   showAxisLabels,
@@ -465,7 +488,7 @@ export function QuadrantAxesModel({
 
       <div
         className={cn(
-          "grid h-full w-full grid-cols-2 grid-rows-2 gap-5 p-[50px]",
+          "grid h-full w-full min-h-0 grid-cols-2 grid-rows-2 gap-5 p-[50px]",
           mode === "placeholderHidden" ? "opacity-0" : "opacity-100"
         )}
         style={{ padding: 50 }}
@@ -473,10 +496,26 @@ export function QuadrantAxesModel({
         {quadrantsInOrder.map((q) => {
           const { bg: themeBg, border: themeBorder } = QUADRANT_THEME[q]!
           const isHighlighted = quadrantHighlightSet.has(q)
+          const sourceQ = matchRevealContentSource?.[q] ?? q
+          const matchRevealCard = mode === "matchReveal" ? matchRevealCards?.[sourceQ] : undefined
+          const isMatchRevealSelected = matchRevealSelection?.selected === q
 
           const isWireframe = mode === "wireframe"
           const isControlled = mode === "controlled"
           const quadState: QuadrantVisualState = quadrantStates?.[q] ?? "inactive"
+
+          const defaultMatchRevealHighlight = cn("border-2 bg-white/10", themeBorder, themeBg)
+          const matchRevealHighlightTile =
+            matchRevealTilePalette === "plainWhite"
+              ? cn(
+                  "border-2 border-black bg-white",
+                  isMatchRevealSelected && "ring-2 ring-blue-600 ring-offset-2"
+                )
+              : matchRevealTilePalette === "neutralGrey"
+                ? matchRevealCategoryBorders
+                  ? cn("border-2 bg-neutral-200", themeBorder)
+                  : "border-2 border-neutral-500 bg-neutral-200"
+                : defaultMatchRevealHighlight
 
           const baseTile = cn(
             "relative flex items-center justify-center rounded-2xl",
@@ -490,12 +529,13 @@ export function QuadrantAxesModel({
                     : quadState === "color"
                       ? cn("border", themeBorder, themeBg)
                       : cn("border-2", themeBorder, themeBg, "ring-1 ring-black/10")
-                : cn(
-                    "border-2 bg-white/10",
-                    themeBorder,
-                    // keep tiles taking space but fade when not active
-                    mode === "placeholderHidden" ? "bg-transparent" : mode === "matchReveal" ? (isHighlighted ? themeBg : "bg-transparent") : themeBg
-                  )
+                : mode === "matchReveal" && isHighlighted
+                  ? matchRevealHighlightTile
+                  : cn(
+                      "border-2 bg-white/10",
+                      themeBorder,
+                      mode === "placeholderHidden" ? "bg-transparent" : mode === "matchReveal" ? "bg-transparent" : themeBg
+                    )
           )
 
           const tileOpacity =
@@ -514,12 +554,66 @@ export function QuadrantAxesModel({
                     : "opacity-35"
 
           const isClickable = mode === "book"
+          const isMatchRevealSelectable = mode === "matchReveal" && matchRevealSelection != null
+
+          const tileClassName = cn(
+            baseTile,
+            tileOpacity,
+            "transition-[opacity,box-shadow]",
+            isClickable || isMatchRevealSelectable ? "cursor-pointer" : "cursor-default",
+            mode === "matchReveal" && isHighlighted && "min-h-0 h-full max-h-full",
+            isMatchRevealSelectable &&
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          )
+
+          const gridStyle = { gridColumn: QUADRANT_LAYOUT[q]!.col + 1, gridRow: QUADRANT_LAYOUT[q]!.row + 1 }
+
+          if (isMatchRevealSelectable) {
+            return (
+              <button
+                key={q}
+                type="button"
+                className={cn(tileClassName, "h-full min-h-0 w-full p-0 font-inherit")}
+                style={gridStyle}
+                aria-pressed={isMatchRevealSelected}
+                aria-label={`Outcome tile ${q}`}
+                onClick={() => matchRevealSelection!.onSelect(q)}
+              >
+                {mode === "matchReveal" && isHighlighted && matchRevealCard ? (
+                  "fullTile" in matchRevealCard ? (
+                    <div className="flex max-h-full min-h-0 w-full max-w-full flex-col items-center justify-center overflow-auto p-3 text-center text-black">
+                      {matchRevealCard.fullTile}
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "flex h-full w-full flex-col items-center justify-center gap-1.5 p-3 text-center",
+                        matchRevealTilePalette === "neutralGrey" ? "text-neutral-900" : "text-black"
+                      )}
+                    >
+                      <div className="text-[4rem] leading-none" aria-hidden>
+                        {matchRevealCard.icon}
+                      </div>
+                      <div
+                        className={cn(
+                          "font-medium leading-snug sm:text-[1.75rem]",
+                          matchRevealTilePalette === "neutralGrey" ? "text-[1.5rem] text-neutral-900" : "text-[1.75rem] text-black"
+                        )}
+                      >
+                        {matchRevealCard.label}
+                      </div>
+                    </div>
+                  )
+                ) : null}
+              </button>
+            )
+          }
 
           return (
             <div
               key={q}
-              className={cn(baseTile, tileOpacity, "transition-opacity", isClickable ? "cursor-pointer" : "cursor-default")}
-              style={{ gridColumn: QUADRANT_LAYOUT[q]!.col + 1, gridRow: QUADRANT_LAYOUT[q]!.row + 1 }}
+              className={tileClassName}
+              style={gridStyle}
               role={isClickable ? "button" : undefined}
               aria-label={mode === "book" ? `${QUADRANT_LABELS[q]}` : undefined}
               onClick={isClickable ? () => onToggleFlip(q) : undefined}
@@ -530,13 +624,31 @@ export function QuadrantAxesModel({
                     {flipped[q] ? bookCard(q).back : bookCard(q).front}
                   </div>
                 </div>
-              ) : mode === "matchReveal" && isHighlighted && matchRevealCards?.[q] ? (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 p-3 text-center">
-                  <div className="text-[4rem] leading-none" aria-hidden>
-                    {matchRevealCards[q]!.icon}
+              ) : mode === "matchReveal" && isHighlighted && matchRevealCard ? (
+                "fullTile" in matchRevealCard ? (
+                  <div className="flex max-h-full min-h-0 w-full max-w-full flex-col items-center justify-center overflow-auto p-3 text-center text-black">
+                    {matchRevealCard.fullTile}
                   </div>
-                  <div className="text-[1.75rem] font-medium leading-snug text-black sm:text-[1.75rem]">{matchRevealCards[q]!.label}</div>
-                </div>
+                ) : (
+                  <div
+                    className={cn(
+                      "flex h-full w-full flex-col items-center justify-center gap-1.5 p-3 text-center",
+                      matchRevealTilePalette === "neutralGrey" ? "text-neutral-900" : "text-black"
+                    )}
+                  >
+                    <div className="text-[4rem] leading-none" aria-hidden>
+                      {matchRevealCard.icon}
+                    </div>
+                    <div
+                      className={cn(
+                        "font-medium leading-snug sm:text-[1.75rem]",
+                        matchRevealTilePalette === "neutralGrey" ? "text-[1.5rem] text-neutral-900" : "text-[1.75rem] text-black"
+                      )}
+                    >
+                      {matchRevealCard.label}
+                    </div>
+                  </div>
+                )
               ) : null}
             </div>
           )

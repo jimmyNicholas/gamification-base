@@ -27,7 +27,9 @@ import { ChaosSkillsMicroArena } from "@/sections/demo/chaos/chaos-skills-micro-
 import { MIMICRY_IMAGE_CACHE_BUST } from "@/sections/demo/mimicry/mimicry-scenario"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 
-type CategoryId = "competition" | "chance" | "roleplay" | "chaos"
+import { QUADRANT_MATCH_REVEAL_CARDS } from "@/sections/demo/match-the-four/quadrant-match-reveal-cards"
+
+export type CategoryId = "competition" | "chance" | "roleplay" | "chaos"
 
 /** Maps Match-the-Four categories to the 2x2 quadrants in the model. */
 const CATEGORY_TO_QUADRANT: Record<CategoryId, QuadrantId> = {
@@ -35,13 +37,6 @@ const CATEGORY_TO_QUADRANT: Record<CategoryId, QuadrantId> = {
   chance: "Q3", // fate + self-intact
   roleplay: "Q2", // agency + self-dissolved
   chaos: "Q4", // fate + self-dissolved
-}
-
-const QUADRANT_MATCH_REVEAL_CARDS: Record<QuadrantId, { label: string; icon: string }> = {
-  Q1: { label: "competition", icon: "🏆" },
-  Q2: { label: "roleplay", icon: "🎭" },
-  Q3: { label: "chance", icon: "🎲" },
-  Q4: { label: "chaos", icon: "💥" },
 }
 
 const DEFAULT_ROLEPLAY_BERET_SRC = `/assets/mimicry/beret.png?v=${MIMICRY_IMAGE_CACHE_BUST}`
@@ -88,8 +83,12 @@ const LEFT_DEFS: LeftDef[] = [
   { id: "chaos-l-chaos", matchId: "chaos" },
 ]
 
-const MATCH_FOUR_LEFT_CARD_SIZE_CLASS = "w-[15.625rem] min-h-[15.625rem] max-w-[15.625rem]"
-const MATCH_FOUR_RIGHT_CARD_SIZE_CLASS = "w-[15.625rem] min-h-[15.625rem] max-w-[15.625rem]"
+/** Max tile size matches quadrant cells at 620px frame; width is fluid below that (see `layout="fluid"`). */
+const MATCH_FOUR_CARD_MAX_CLASS = "w-full max-w-[15.625rem]"
+
+/** Visual parity with `QuadrantAxesModel` inner grid: padding, gap, and frame height vs `max-w-[620px]`. */
+const MATCH_FOUR_MODEL_FRAME_CLASS =
+  "box-border flex w-full min-w-0 flex-col gap-5 p-[50px] lg:min-h-[620px] lg:h-full lg:flex-row lg:items-center lg:justify-center"
 
 function defaultRightItems(): RightItem[] {
   return LEFT_DEFS.map((l) => ({
@@ -103,24 +102,52 @@ function CategoryIllustration({ matchId }: { matchId: CategoryId }) {
   const emoji =
     matchId === "competition" ? "🏆" : matchId === "chance" ? "🎲" : matchId === "roleplay" ? "🎭" : "💥"
   return (
-    <span className="text-[2.75rem] leading-none sm:text-[3.25rem]" aria-hidden>
+    <span className="text-[clamp(1.75rem,22cqw,3.25rem)] leading-none" aria-hidden>
       {emoji}
     </span>
   )
 }
 
-function buildLeftCard(outcomes: DemoMatchOutcomes, matchId: CategoryId): { content: ReactNode; ariaLabel: string } {
+/** `compact` — Match the Four grid cards. `quadrant` — Recognition 2×2 tiles (centered, capped size). */
+export type BuildLeftCardDensity = "compact" | "quadrant"
+
+export function buildLeftCard(
+  outcomes: DemoMatchOutcomes,
+  matchId: CategoryId,
+  density: BuildLeftCardDensity = "compact"
+): { content: ReactNode; ariaLabel: string } {
   switch (matchId) {
     case "competition": {
       const emoji = outcomes.competitionAnimalEmoji ?? FALLBACK_COMPETITION_ANIMAL
       const line = outcomes.competitionTimeMs != null ? formatMmSs(outcomes.competitionTimeMs) : "0.0"
       return {
         content: (
-          <div className="flex min-h-0 w-full flex-col items-center justify-center gap-1">
-            <span className="text-[2.5rem] leading-none sm:text-[3rem]" aria-hidden>
+          <div
+            className={
+              density === "quadrant"
+                ? "flex min-h-0 w-full flex-col items-center justify-center gap-2 px-1"
+                : "flex min-h-0 w-full flex-col items-center justify-center gap-1"
+            }
+          >
+            <span
+              className={
+                density === "quadrant"
+                  ? "text-[clamp(4.25rem,13vw,9.5rem)] leading-none"
+                  : "text-[2.5rem] leading-none sm:text-[3rem]"
+              }
+              aria-hidden
+            >
               {emoji}
             </span>
-            <span className="tabular-nums text-base font-semibold text-black sm:text-lg">{line}</span>
+            <span
+              className={
+                density === "quadrant"
+                  ? "tabular-nums text-2xl font-bold text-black sm:text-3xl"
+                  : "tabular-nums text-base font-semibold text-black sm:text-lg"
+              }
+            >
+              {line}
+            </span>
           </div>
         ),
         ariaLabel: `Competition, your time ${line}`,
@@ -129,14 +156,22 @@ function buildLeftCard(outcomes: DemoMatchOutcomes, matchId: CategoryId): { cont
     case "chance": {
       const line = outcomes.chanceAnswer ?? "Tokyo"
       return {
-        content: (
-          <div className="flex min-h-0 w-full flex-col items-center justify-center gap-1.5">
-            <div className="h-16 w-16 shrink-0 sm:h-20 sm:w-20">
-              <ChanceWheelPreview className="h-full w-full max-w-none" />
+        content:
+          density === "quadrant" ? (
+            <div className="flex w-full max-w-48 flex-col items-center justify-center gap-2">
+              <div className="aspect-square w-full max-w-44 shrink-0">
+                <ChanceWheelPreview className="h-full w-full max-w-none" />
+              </div>
+              <span className="text-balance text-center text-sm font-medium leading-snug text-black sm:text-base">{line}</span>
             </div>
-            <span className="text-balance text-center text-xs leading-snug text-black sm:text-sm">{line}</span>
-          </div>
-        ),
+          ) : (
+            <div className="flex min-h-0 w-full flex-col items-center justify-center gap-1.5">
+              <div className="h-16 w-16 shrink-0 sm:h-20 sm:w-20">
+                <ChanceWheelPreview className="h-full w-full max-w-none" />
+              </div>
+              <span className="text-balance text-center text-xs leading-snug text-black sm:text-sm">{line}</span>
+            </div>
+          ),
         ariaLabel: `Chance, your answer: ${line}`,
       }
     }
@@ -145,13 +180,23 @@ function buildLeftCard(outcomes: DemoMatchOutcomes, matchId: CategoryId): { cont
       const src = outcomes.roleplayHatImageSrc ?? DEFAULT_ROLEPLAY_BERET_SRC
       return {
         content: (
-          <div className="flex h-full min-h-0 w-full items-center justify-center p-0.5">
+          <div
+            className={
+              density === "quadrant"
+                ? "flex min-h-0 w-full items-center justify-center p-1"
+                : "flex min-h-0 w-full items-center justify-center p-0.5"
+            }
+          >
             <Image
               src={src}
               alt=""
-              width={120}
-              height={120}
-              className="max-h-[min(100%,7.5rem)] max-w-[min(100%,7.5rem)] rounded-lg object-cover sm:max-h-[min(100%,8rem)] sm:max-w-[min(100%,8rem)]"
+              width={density === "quadrant" ? 256 : 120}
+              height={density === "quadrant" ? 256 : 120}
+              className={
+                density === "quadrant"
+                  ? "aspect-square w-full max-w-[min(100%,16rem)] rounded-xl object-cover sm:max-w-[min(100%,17.5rem)]"
+                  : "max-h-[min(100%,7.5rem)] max-w-[min(100%,7.5rem)] rounded-lg object-cover sm:max-h-[min(100%,8rem)] sm:max-w-[min(100%,8rem)]"
+              }
             />
           </div>
         ),
@@ -163,18 +208,28 @@ function buildLeftCard(outcomes: DemoMatchOutcomes, matchId: CategoryId): { cont
       if (skills.length === 0) {
         const line = "Grammar"
         return {
-          content: (
-            <span className="text-balance text-[0.65rem] leading-snug text-black sm:text-xs">{line}</span>
-          ),
+          content:
+            density === "quadrant" ? (
+              <span className="rounded-full border-2 border-black/25 bg-black/4 px-4 py-2 text-center text-sm font-semibold text-black sm:text-base">
+                {line}
+              </span>
+            ) : (
+              <span className="text-balance text-[0.65rem] leading-snug text-black sm:text-xs">{line}</span>
+            ),
           ariaLabel: `Chaos, skills selected: ${line}`,
         }
       }
       return {
-        content: (
-          <div className="flex h-full min-h-36 w-full min-w-0 flex-col sm:min-h-42">
-            <ChaosSkillsMicroArena skills={skills} className="h-full min-h-0 w-full flex-1" />
-          </div>
-        ),
+        content:
+          density === "quadrant" ? (
+            <div className="flex h-[min(100%,10rem)] w-full min-h-0 max-w-56 items-center justify-center">
+              <ChaosSkillsMicroArena skills={skills} className="h-full w-full min-h-0" />
+            </div>
+          ) : (
+            <div className="flex h-full min-h-36 w-full min-w-0 flex-col sm:min-h-42">
+              <ChaosSkillsMicroArena skills={skills} className="h-full min-h-0 w-full flex-1" />
+            </div>
+          ),
         ariaLabel: `Chaos, skills selected: ${skills.join(", ")}`,
       }
     }
@@ -280,20 +335,21 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
     <div className={cn("flex w-full flex-col items-center gap-8", className)}>
       <DemoTwoPaneLayout
         content={
-          <div className="flex min-w-0 flex-col items-stretch gap-10 lg:h-full lg:flex-row lg:items-stretch lg:justify-between lg:gap-14">
-            <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-5 justify-items-center">
+          <div className={MATCH_FOUR_MODEL_FRAME_CLASS}>
+            <div className="grid min-w-0 w-full flex-1 grid-cols-2 grid-rows-2 gap-5 justify-items-center">
               {shuffledLeft.map((item, slot) => {
                 const slotKey = LEFT_SLOT_KEYS[slot] ?? "?"
                 const matched = matchedIds.has(item.matchId)
                 const { content: leftContent, ariaLabel } = buildLeftCard(outcomes, item.matchId)
                 return (
-                  <div key={item.id} className="flex flex-col items-center justify-center">
+                  <div key={item.id} className="flex min-w-0 w-full flex-col items-center justify-center">
                     <MatchEmojiCard
+                      layout="fluid"
                       content={leftContent}
                       ariaLabel={ariaLabel}
                       matched={matched}
                       selected={!matched && selectedLeftId === item.id}
-                      className={MATCH_FOUR_LEFT_CARD_SIZE_CLASS}
+                      className={MATCH_FOUR_CARD_MAX_CLASS}
                       onClick={matched ? undefined : () => toggleLeft(item.id)}
                       keyHint={slotKey}
                     />
@@ -302,15 +358,16 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
               })}
             </div>
 
-            <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-5 justify-items-center">
+            <div className="grid min-w-0 w-full flex-1 grid-cols-2 grid-rows-2 gap-5 justify-items-center">
               {orderedRight.map((item, slot) => {
                 const matched = matchedIds.has(item.matchId)
                 const cat = CATEGORY[item.matchId]
                 const slotKey = RIGHT_SLOT_KEYS[slot] ?? "?"
                 const illustration = <CategoryIllustration matchId={item.matchId} />
                 return (
-                  <div key={item.id} className="flex flex-col items-center justify-center">
+                  <div key={item.id} className="flex min-w-0 w-full flex-col items-center justify-center">
                     <MatchLabelCard
+                      layout="fluid"
                       label={item.label}
                       frameClassName={cat.frameClassName}
                       unmatchedLeading={illustration}
@@ -318,7 +375,7 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
                       matchedSurfaceClassName={cat.matchedSurfaceClassName}
                       matchedLeading={undefined}
                       selected={selectedRightId === item.id}
-                      className={cn(MATCH_FOUR_RIGHT_CARD_SIZE_CLASS, matched ? "invisible pointer-events-none" : undefined)}
+                      className={cn(MATCH_FOUR_CARD_MAX_CLASS, matched ? "invisible pointer-events-none" : undefined)}
                       onClick={matched ? undefined : () => toggleRight(item.id)}
                       keyHint={slotKey}
                     />

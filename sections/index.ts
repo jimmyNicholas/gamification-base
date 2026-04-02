@@ -8,8 +8,11 @@ export {
 } from "@/sections/intro/intro-page"
 
 export {
+  DEMO_COMPETITION_AMBER_SURFACE,
+  DEMO_MAIN_BASE_CLASSNAME,
   DEMO_MAIN_WIDE,
   DEMO_OUTLINE_BG,
+  DEMO_RECOGNITION_SURFACE,
   DemoStyleLayout,
   type DemoStyleLayoutProps,
 } from "@/sections/demo/demo-outline-layout"
@@ -27,7 +30,11 @@ export { ChaosPage, type ChaosPageProps } from "@/sections/demo/chaos/chaos-page
 export {
   MatchTheFourPage,
   type MatchTheFourPageProps,
-} from "@/sections/demo/match-the-four/match-the-four-page"
+} from "@/sections/recog/match-the-four-page"
+
+export { RecognitionPage, type RecognitionPageProps } from "@/sections/recog/recognition-page"
+
+export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"
 
 export {
   VideoGroundingPage,

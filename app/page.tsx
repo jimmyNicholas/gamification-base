@@ -16,6 +16,7 @@ import {
   initialDemoMatchOutcomes,
   IntroPage,
   MatchTheFourPage,
+  RecognitionPage,
   MimicryPage,
   QuadrantsBookPage,
   AxisAgencyFatePage,
@@ -79,6 +80,10 @@ export default function Home() {
     setPhase("matchTheFour")
   }, [])
 
+  const goToRecognition = useCallback(() => {
+    setPhase("recognition")
+  }, [])
+
   const goToVideoGrounding = useCallback(() => {
     setPhase("videoGrounding")
   }, [])
@@ -127,7 +132,9 @@ export default function Home() {
   } else if (phase === "chaos") {
     main = <ChaosPage onContinue={goToMatchTheFour} />
   } else if (phase === "matchTheFour") {
-    main = <MatchTheFourPage outcomes={matchOutcomes} onContinue={goToVideoGrounding} />
+    main = <MatchTheFourPage outcomes={matchOutcomes} onContinue={goToRecognition} />
+  } else if (phase === "recognition") {
+    main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToVideoGrounding} />
   } else if (phase === "videoGrounding") {
     main = <VideoGroundingPage onContinue={finishVideoGrounding} />
   } else if (phase === "book") {

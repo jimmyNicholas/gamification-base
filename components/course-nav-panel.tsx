@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Copy,
   Dices,
+  Layers,
   LayoutGrid,
   LayoutList,
   Sparkles,
@@ -24,6 +25,7 @@ export type CoursePhase =
   | "mimicry"
   | "chaos"
   | "matchTheFour"
+  | "recognition"
   | "videoGrounding"
   | "book"
   | "axisAgencyFate"
@@ -46,6 +48,11 @@ const NAV_ITEMS: {
     phase: "matchTheFour",
     label: "2.6 — Match the Four",
     Icon: LayoutGrid,
+  },
+  {
+    phase: "recognition",
+    label: "Recognition",
+    Icon: Layers,
   },
   {
     phase: "videoGrounding",
