@@ -39,6 +39,18 @@ const QUADRANT_THEME: Record<QuadrantId, { bg: string; border: string }> = {
   Q4: { bg: "bg-pink-50/90", border: "border-pink-500/70" },
 }
 
+/** Recognition right column: category fill + border when a left tile is selected (~60% border opacity). */
+const QUADRANT_MATCH_REVEAL_CATEGORY_TINT: Record<QuadrantId, string> = {
+  Q1: "border-amber-500/60 bg-amber-500/15",
+  Q2: "border-violet-500/60 bg-violet-500/15",
+  Q3: "border-emerald-500/60 bg-emerald-500/15",
+  Q4: "border-pink-500/60 bg-pink-500/15",
+}
+
+/** Recognition left column: same blue accent as selection, softened (ring + diffuse shadow). */
+const MATCH_REVEAL_LEFT_HOVER_BLUE =
+  "hover:ring-2 hover:ring-blue-600/45 hover:ring-offset-2 hover:shadow-[0_0_28px_10px_rgba(37,99,235,0.4)]"
+
 const QUADRANT_LAYOUT: Record<QuadrantId, { row: 0 | 1; col: 0 | 1 }> = {
   // 2x2: top = self-intact, bottom = self-dissolved; left = agency, right = fate
   Q1: { row: 0, col: 0 }, // top-left
@@ -143,6 +155,12 @@ export type QuadrantAxesModelProps = {
    * Recognition right column: when true, each grey tile uses that cell’s quadrant border colour.
    */
   matchRevealCategoryBorders?: boolean
+  /** Recognition left column: display cells already paired (hidden, space preserved). */
+  matchRevealLeftMatchedHidden?: ReadonlySet<QuadrantId>
+  /** Recognition right column: category cells successfully matched (full opacity). */
+  matchRevealRightMatched?: ReadonlySet<QuadrantId>
+  /** Recognition right column: click a category to pair with the selected outcome tile. */
+  onMatchRevealRightClick?: (cell: QuadrantId) => void
 
   // Used by the "controlled" (wireframe debugging) mode.
   quadrantStates?: Partial<Record<QuadrantId, QuadrantVisualState>>
@@ -165,6 +183,9 @@ export function QuadrantAxesModel({
   matchRevealTilePalette = "theme",
   matchRevealSelection,
   matchRevealCategoryBorders = false,
+  matchRevealLeftMatchedHidden,
+  matchRevealRightMatched,
+  onMatchRevealRightClick,
   quadrantStates,
   axisStates,
   showAxisLabels,
@@ -499,22 +520,34 @@ export function QuadrantAxesModel({
           const sourceQ = matchRevealContentSource?.[q] ?? q
           const matchRevealCard = mode === "matchReveal" ? matchRevealCards?.[sourceQ] : undefined
           const isMatchRevealSelected = matchRevealSelection?.selected === q
+          const isMatchRevealSelectable = mode === "matchReveal" && matchRevealSelection != null
 
           const isWireframe = mode === "wireframe"
           const isControlled = mode === "controlled"
           const quadState: QuadrantVisualState = quadrantStates?.[q] ?? "inactive"
 
+          const isMatchRevealRightInteractive =
+            mode === "matchReveal" && onMatchRevealRightClick != null && matchRevealTilePalette === "neutralGrey"
+          const isRightMatched = matchRevealRightMatched?.has(q) ?? false
+
           const defaultMatchRevealHighlight = cn("border-2 bg-white/10", themeBorder, themeBg)
           const matchRevealHighlightTile =
             matchRevealTilePalette === "plainWhite"
               ? cn(
-                  "border-2 border-black bg-white",
+                  "border-2 border-black bg-white transition-shadow duration-200",
+                  isMatchRevealSelectable && !isMatchRevealSelected && MATCH_REVEAL_LEFT_HOVER_BLUE,
                   isMatchRevealSelected && "ring-2 ring-blue-600 ring-offset-2"
                 )
               : matchRevealTilePalette === "neutralGrey"
-                ? matchRevealCategoryBorders
-                  ? cn("border-2 bg-neutral-200", themeBorder)
-                  : "border-2 border-neutral-500 bg-neutral-200"
+                ? isMatchRevealRightInteractive
+                  ? isRightMatched
+                    ? cn("border-2 transition-colors", themeBorder, themeBg)
+                    : matchRevealCategoryBorders
+                      ? "border-2 border-neutral-500 bg-neutral-200 transition-colors"
+                      : "border-2 border-transparent bg-transparent transition-colors"
+                  : matchRevealCategoryBorders
+                    ? cn("border-2 transition-colors", QUADRANT_MATCH_REVEAL_CATEGORY_TINT[q])
+                    : "border-2 border-neutral-500 bg-neutral-200"
                 : defaultMatchRevealHighlight
 
           const baseTile = cn(
@@ -554,19 +587,29 @@ export function QuadrantAxesModel({
                     : "opacity-35"
 
           const isClickable = mode === "book"
-          const isMatchRevealSelectable = mode === "matchReveal" && matchRevealSelection != null
 
           const tileClassName = cn(
             baseTile,
             tileOpacity,
             "transition-[opacity,box-shadow]",
-            isClickable || isMatchRevealSelectable ? "cursor-pointer" : "cursor-default",
+            isClickable || isMatchRevealSelectable || isMatchRevealRightInteractive ? "cursor-pointer" : "cursor-default",
             mode === "matchReveal" && isHighlighted && "min-h-0 h-full max-h-full",
             isMatchRevealSelectable &&
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
           )
 
           const gridStyle = { gridColumn: QUADRANT_LAYOUT[q]!.col + 1, gridRow: QUADRANT_LAYOUT[q]!.row + 1 }
+
+          if (isMatchRevealSelectable && matchRevealLeftMatchedHidden?.has(q)) {
+            return (
+              <div
+                key={q}
+                className="pointer-events-none invisible relative flex min-h-0 h-full w-full items-center justify-center rounded-2xl"
+                style={gridStyle}
+                aria-hidden
+              />
+            )
+          }
 
           if (isMatchRevealSelectable) {
             return (
@@ -578,6 +621,54 @@ export function QuadrantAxesModel({
                 aria-pressed={isMatchRevealSelected}
                 aria-label={`Outcome tile ${q}`}
                 onClick={() => matchRevealSelection!.onSelect(q)}
+              >
+                {mode === "matchReveal" && isHighlighted && matchRevealCard ? (
+                  "fullTile" in matchRevealCard ? (
+                    <div className="flex max-h-full min-h-0 w-full max-w-full flex-col items-center justify-center overflow-auto p-3 text-center text-black">
+                      {matchRevealCard.fullTile}
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "flex h-full w-full flex-col items-center justify-center gap-1.5 p-3 text-center",
+                        matchRevealTilePalette === "neutralGrey" ? "text-neutral-900" : "text-black"
+                      )}
+                    >
+                      <div className="text-[4rem] leading-none" aria-hidden>
+                        {matchRevealCard.icon}
+                      </div>
+                      <div
+                        className={cn(
+                          "font-medium leading-snug sm:text-[1.75rem]",
+                          matchRevealTilePalette === "neutralGrey" ? "text-[1.5rem] text-neutral-900" : "text-[1.75rem] text-black"
+                        )}
+                      >
+                        {matchRevealCard.label}
+                      </div>
+                    </div>
+                  )
+                ) : null}
+              </button>
+            )
+          }
+
+          if (isMatchRevealRightInteractive) {
+            return (
+              <button
+                key={q}
+                type="button"
+                className={cn(
+                  tileClassName,
+                  "h-full min-h-0 w-full p-0 font-inherit",
+                  isRightMatched ? "cursor-default" : "cursor-pointer",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                )}
+                style={gridStyle}
+                aria-label={`Category tile ${q}`}
+                onClick={() => {
+                  if (isRightMatched) return
+                  onMatchRevealRightClick!(q)
+                }}
               >
                 {mode === "matchReveal" && isHighlighted && matchRevealCard ? (
                   "fullTile" in matchRevealCard ? (

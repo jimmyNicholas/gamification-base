@@ -20,7 +20,7 @@ export const DEMO_RECOGNITION_SURFACE = "#fff4d9"
 export const DEMO_MAIN_BASE_CLASSNAME =
   "mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-6 py-14 sm:px-10"
 
-/** Wide demo stages (chaos, match-the-four, mimicry) — merges over default `main` via `tailwind-merge`. */
+/** Wide demo stages (chaos, mimicry, etc.) — merges over default `main` via `tailwind-merge`. */
 export const DEMO_MAIN_WIDE =
   "max-w-full px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8 lg:max-w-[min(100%,85rem)] xl:max-w-[min(100%,100rem)] xl:px-10 2xl:max-w-[min(100%,120rem)] 2xl:px-12"
 

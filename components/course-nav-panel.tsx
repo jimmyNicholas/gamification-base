@@ -12,7 +12,6 @@ import {
   LayoutList,
   Sparkles,
   Trophy,
-  Video,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -24,9 +23,7 @@ export type CoursePhase =
   | "chance"
   | "mimicry"
   | "chaos"
-  | "matchTheFour"
   | "recognition"
-  | "videoGrounding"
   | "book"
   | "axisAgencyFate"
   | "axisSelfIntactDissolved"
@@ -45,19 +42,9 @@ const NAV_ITEMS: {
   { phase: "mimicry", label: "Mimicry", Icon: Copy },
   { phase: "chaos", label: "Chaos", Icon: Sparkles },
   {
-    phase: "matchTheFour",
-    label: "2.6 — Match the Four",
-    Icon: LayoutGrid,
-  },
-  {
     phase: "recognition",
     label: "Recognition",
     Icon: Layers,
-  },
-  {
-    phase: "videoGrounding",
-    label: "2.7 — Video Grounding",
-    Icon: Video,
   },
   { phase: "book", label: "Book (Quadrants)", Icon: LayoutGrid },
   { phase: "axisAgencyFate", label: "Agency ↔ Fate", Icon: Dices },

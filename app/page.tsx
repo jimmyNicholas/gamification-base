@@ -15,7 +15,6 @@ import {
   DemoOutlinePage,
   initialDemoMatchOutcomes,
   IntroPage,
-  MatchTheFourPage,
   RecognitionPage,
   MimicryPage,
   QuadrantsBookPage,
@@ -23,7 +22,6 @@ import {
   AxisSelfIntactDissolvedPage,
   AxesAssessmentPage,
   ReflectionPage,
-  VideoGroundingPage,
   type DemoMatchOutcomes,
 } from "@/sections"
 
@@ -72,23 +70,15 @@ export default function Home() {
     []
   )
 
-  const goToMatchTheFour = useCallback((payload?: { chaosQ2Skills: readonly string[] }) => {
+  const goToRecognitionFromChaos = useCallback((payload?: { chaosQ2Skills: readonly string[] }) => {
     setMatchOutcomes((o) => ({
       ...o,
       chaosQ2Skills: payload?.chaosQ2Skills ?? o.chaosQ2Skills,
     }))
-    setPhase("matchTheFour")
-  }, [])
-
-  const goToRecognition = useCallback(() => {
     setPhase("recognition")
   }, [])
 
-  const goToVideoGrounding = useCallback(() => {
-    setPhase("videoGrounding")
-  }, [])
-
-  const finishVideoGrounding = useCallback(() => {
+  const goToBook = useCallback(() => {
     setPhase("book")
   }, [])
 
@@ -130,13 +120,9 @@ export default function Home() {
   } else if (phase === "mimicry") {
     main = <MimicryPage onContinue={goToChaos} />
   } else if (phase === "chaos") {
-    main = <ChaosPage onContinue={goToMatchTheFour} />
-  } else if (phase === "matchTheFour") {
-    main = <MatchTheFourPage outcomes={matchOutcomes} onContinue={goToRecognition} />
+    main = <ChaosPage onContinue={goToRecognitionFromChaos} />
   } else if (phase === "recognition") {
-    main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToVideoGrounding} />
-  } else if (phase === "videoGrounding") {
-    main = <VideoGroundingPage onContinue={finishVideoGrounding} />
+    main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToBook} />
   } else if (phase === "book") {
     main = <QuadrantsBookPage onContinue={goToAxisAgencyFate} />
   } else if (phase === "axisAgencyFate") {

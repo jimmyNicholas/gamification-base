@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 export const demoActivityHeadingClassName =
   "text-center text-xl font-bold leading-snug text-black sm:text-2xl"
 
-/** Centered supporting copy under a title or standalone intro (e.g. match-the-four). */
+/** Centered supporting copy under a title or standalone intro. */
 export const demoActivityInstructionClassName =
   "text-center text-base font-medium leading-snug text-black/85 sm:text-lg"
 
@@ -53,15 +53,6 @@ export const demoStageBorderMimicryClassName = "border-black/20"
 
 export const demoStageGradientFillClassName =
   "bg-linear-to-b from-white/90 to-[#e8f5ef]/90"
-
-/**
- * Match-the-four content width + padding on the mint page (no lifted card —
- * same flat treatment as competition `CustomTimedMatch` with `flatSurface`).
- */
-export const demoStageMatchTheFourPanelClassName = cn(
-  demoWideContentClassName,
-  "relative px-0 py-2 sm:py-3 md:py-4"
-)
 
 /** Chaos Q1 quadrant arena. */
 export const demoStageChaosQ1ClassName = cn(

@@ -27,19 +27,9 @@ export { MimicryPage, type MimicryPageProps } from "@/sections/demo/mimicry/mimi
 
 export { ChaosPage, type ChaosPageProps } from "@/sections/demo/chaos/chaos-page"
 
-export {
-  MatchTheFourPage,
-  type MatchTheFourPageProps,
-} from "@/sections/recog/match-the-four-page"
-
 export { RecognitionPage, type RecognitionPageProps } from "@/sections/recog/recognition-page"
 
 export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"
-
-export {
-  VideoGroundingPage,
-  type VideoGroundingPageProps,
-} from "@/sections/demo/video-grounding/video-grounding-page"
 
 export { QuadrantsBookPage, type QuadrantsBookPageProps } from "@/sections/demo/quadrants-axes/quadrants-book-page"
 

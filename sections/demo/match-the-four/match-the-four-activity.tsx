@@ -1,3 +1,5 @@
+// DO NOT USE THIS FILE FOR MATCH THE FOUR ACTIVITY
+
 "use client"
 
 import Image from "next/image"
@@ -333,7 +335,7 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
 
   return (
     <div className={cn("flex w-full flex-col items-center gap-8", className)}>
-      <DemoTwoPaneLayout
+      {/* <DemoTwoPaneLayout
         content={
           <div className={MATCH_FOUR_MODEL_FRAME_CLASS}>
             <div className="grid min-w-0 w-full flex-1 grid-cols-2 grid-rows-2 gap-5 justify-items-center">
@@ -407,7 +409,7 @@ export function MatchTheFourActivity({ outcomes, onContinue, className }: MatchT
             </button>
           ) : null}
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   )
 }

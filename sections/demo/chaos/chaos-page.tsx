@@ -214,7 +214,7 @@ function randomQ2Motion(): { positions: Vec2[]; velocities: Vec2[] } {
 }
 
 export type ChaosPageProps = {
-  /** After Q2 — leaves Chaos for §2.6 (`matchTheFour` phase). */
+  /** After Q2 — leaves Chaos for Recognition (carries Q2 skill picks into match outcomes). */
   onContinue?: (payload?: { chaosQ2Skills: readonly string[] }) => void
 }
 
