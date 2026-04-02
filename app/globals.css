@@ -81,6 +81,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --color-course-shell-top: #111827;
+  --color-course-shell-bottom: #030712;
+  --color-course-shell-glow: #38bdf866;
+  --color-token-simulation: #2563eb;
+  --color-token-chance: #16a34a;
+  --color-token-performance: #ea580c;
+  --color-token-transformation: #a21caf;
 }
 
 .dark {
@@ -115,6 +122,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --color-course-shell-top: #0b1120;
+  --color-course-shell-bottom: #020617;
+  --color-course-shell-glow: #0ea5e94d;
+  --color-token-simulation: #60a5fa;
+  --color-token-chance: #4ade80;
+  --color-token-performance: #fb923c;
+  --color-token-transformation: #d946ef;
 }
 
 @layer base {

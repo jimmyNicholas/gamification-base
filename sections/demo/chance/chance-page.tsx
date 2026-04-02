@@ -1,0 +1,18 @@
+"use client"
+
+import { CustomChanceEngine } from "@/components/custom-chance-engine"
+import { DemoStyleLayout, DEMO_MAIN_WIDE } from "@/sections/demo/demo-outline-layout"
+
+export type ChancePageProps = {
+  onContinue?: (payload?: { answer: string }) => void
+}
+
+export function ChancePage({ onContinue }: ChancePageProps) {
+  return (
+    <DemoStyleLayout mainClassName={DEMO_MAIN_WIDE}>
+      <div className="flex w-full flex-col items-center gap-6">
+        <CustomChanceEngine className="w-full" onContinueAfterResult={onContinue} />
+      </div>
+    </DemoStyleLayout>
+  )
+}
