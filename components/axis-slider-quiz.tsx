@@ -200,6 +200,10 @@ export function AxisSliderQuiz({ axisId, situations, onComplete }: AxisSliderQui
             focusAxis={axisFocus}
             horizontalIndex={axisId === "agency-fate" ? sliderIndex : AXIS_CENTER}
             verticalIndex={axisId === "self-intact-dissolved" ? sliderIndex : AXIS_CENTER}
+            onAxisIndexChange={(axis, index) => {
+              if (axis !== axisFocus) return
+              setSliderIndex(index)
+            }}
           />
         </div>
       </div>

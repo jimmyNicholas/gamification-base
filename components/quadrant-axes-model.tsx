@@ -8,7 +8,7 @@ import { QUADRANT_PLAY_CATEGORY_TILES } from "@/sections/demo/quadrants-axes/qua
 
 type ModelMode = "placeholderHidden" | "matchReveal" | "book" | "singleAxisQuiz" | "axesAssessment" | "wireframe" | "controlled"
 
-type AxisFocus = "horizontal" | "vertical"
+type AxisFocus = "horizontal" | "vertical" | "both"
 
 type AxisIndex = 0 | 1 | 2 | 3 | 4
 
@@ -126,6 +126,7 @@ function inferQuadrantPairForSingleAxis(focusAxis: AxisFocus, valueIndex: number
   if (focusAxis === "horizontal") {
     return valueIndex <= 1 ? ["Q1", "Q2"] : ["Q3", "Q4"]
   }
+  if (focusAxis === "both") return []
   return valueIndex <= 1 ? ["Q1", "Q3"] : ["Q2", "Q4"]
 }
 
@@ -152,6 +153,13 @@ export type QuadrantAxesModelProps = {
   bookCards?: Partial<Record<QuadrantId, BookCard>>
   /** When `mode` is `book`, show axes and Agency/Fate labels. Set `false` for category-only tiles (Caillois styling). */
   bookShowAxes?: boolean
+  /** When `mode` is `book`, allow clicking tiles to flip to the back face. */
+  bookFlippable?: boolean
+  /**
+   * When `mode` is `book`, controls the opacity of the axis lines + labels.
+   * Useful with `bookShowAxes={false}` to keep the category-only tile layout but show greyed axes.
+   */
+  bookAxesOpacity?: number
   /** Controlled flip state for book mode (use with `onBookFlipToggle`). */
   bookFlipped?: Partial<Record<QuadrantId, boolean>>
   onBookFlipToggle?: (q: QuadrantId) => void
@@ -202,6 +210,8 @@ export function QuadrantAxesModel({
   focusAxis = "horizontal",
   bookCards,
   bookShowAxes = true,
+  bookFlippable = true,
+  bookAxesOpacity,
   bookFlipped: bookFlippedControlled,
   onBookFlipToggle,
   bookFrontExtra,
@@ -221,10 +231,10 @@ export function QuadrantAxesModel({
   onAxisToggle,
   onAxisIndexChange,
 }: QuadrantAxesModelProps) {
-  const uid = React.useId().replace(/:/g, "")
-
   const controlledHorizontalAxisState: AxisVisualState = normalizeAxisState(axisStates?.horizontal)
   const controlledVerticalAxisState: AxisVisualState = normalizeAxisState(axisStates?.vertical)
+  const isHorizontalFocus = focusAxis === "horizontal" || focusAxis === "both"
+  const isVerticalFocus = focusAxis === "vertical" || focusAxis === "both"
 
   const controlledAxisLabelsOpacity = mode === "controlled" ? (showAxisLabels ? 1 : 0) : 1
 
@@ -233,10 +243,33 @@ export function QuadrantAxesModel({
   const verticalAxisOpacity =
     controlledVerticalAxisState === "invisible" ? 0 : controlledVerticalAxisState === "inactiveGrey" ? 0.35 : 1
 
+  const singleAxisHorizontalIsActive = mode === "singleAxisQuiz" ? isHorizontalFocus : true
+  const singleAxisVerticalIsActive = mode === "singleAxisQuiz" ? isVerticalFocus : true
+
   const horizontalAxisStroke =
-    mode === "controlled" && controlledHorizontalAxisState === "inactiveGrey" ? "#9ca3af" : "#5b2dd6"
+    mode === "controlled"
+      ? controlledHorizontalAxisState === "inactiveGrey"
+        ? "#9ca3af"
+        : "#5b2dd6"
+      : mode === "singleAxisQuiz"
+        ? singleAxisHorizontalIsActive
+          ? "#5b2dd6"
+          : "#9ca3af"
+        : "#5b2dd6"
+
   const verticalAxisStroke =
-    mode === "controlled" && controlledVerticalAxisState === "inactiveGrey" ? "#9ca3af" : "#7b4a12"
+    mode === "controlled"
+      ? controlledVerticalAxisState === "inactiveGrey"
+        ? "#9ca3af"
+        : "#7b4a12"
+      : mode === "singleAxisQuiz"
+        ? singleAxisVerticalIsActive
+          ? "#7b4a12"
+          : "#9ca3af"
+        : "#7b4a12"
+
+  const horizontalAxisLabelFill = mode === "singleAxisQuiz" ? horizontalAxisStroke : "black"
+  const verticalAxisLabelFill = mode === "singleAxisQuiz" ? verticalAxisStroke : "black"
 
   const horizontalAxisStrokeWidth = 3.2
   const verticalAxisStrokeWidth = 3.2
@@ -304,6 +337,10 @@ export function QuadrantAxesModel({
     if (mode === "matchReveal") return revealedSet
     if (mode === "book") return new Set()
     if (mode === "singleAxisQuiz") {
+      if (focusAxis === "both") {
+        const q = inferQuadrantFromAxes(horizontalIndex, verticalIndex)
+        return q ? new Set([q]) : new Set()
+      }
       const valueIndex = focusAxis === "horizontal" ? horizontalIndex : verticalIndex
       return new Set(inferQuadrantPairForSingleAxis(focusAxis, valueIndex))
     }
@@ -316,14 +353,18 @@ export function QuadrantAxesModel({
 
   const axisVisibility = React.useMemo(() => {
     if (mode === "placeholderHidden" || mode === "matchReveal" || mode === "wireframe") return { horizontal: 0, vertical: 0 }
-    if (mode === "book" && !bookShowAxes) return { horizontal: 0, vertical: 0 }
+    if (mode === "book") {
+      const opacity = bookAxesOpacity ?? (bookShowAxes ? 1 : 0)
+      return { horizontal: opacity, vertical: opacity }
+    }
     if (mode === "controlled") return { horizontal: horizontalAxisOpacity, vertical: verticalAxisOpacity }
     if (mode === "singleAxisQuiz") {
-      return focusAxis === "horizontal" ? { horizontal: 1, vertical: 0.25 } : { horizontal: 0.25, vertical: 1 }
+      // Keep both axes visible, but render one in grey based on `focusAxis`.
+      return { horizontal: 1, vertical: 1 }
     }
     // book (with axes), axesAssessment
     return { horizontal: 1, vertical: 1 }
-  }, [mode, bookShowAxes, focusAxis, horizontalAxisOpacity, verticalAxisOpacity])
+  }, [mode, bookShowAxes, bookAxesOpacity, horizontalAxisOpacity, verticalAxisOpacity])
 
   const showQuadrantTiles = mode !== "placeholderHidden"
 
@@ -460,7 +501,28 @@ export function QuadrantAxesModel({
               stroke={horizontalAxisStroke}
               strokeWidth={horizontalAxisStrokeWidth}
             />
-            {horizontalMarkerIndex != null && controlledHorizontalAxisState === "activeColor" ? (
+            {(mode === "singleAxisQuiz" || mode === "axesAssessment") && isHorizontalFocus ? (
+              <>
+                {[0, 1, 2, 3, 4].map((idx) => {
+                  const axisIdx = idx as AxisIndex
+                  const isSelected = axisIdx === horizontalMarkerIndex
+                  const isCenter = axisIdx === AXIS_CENTER
+                  const opacity = isSelected ? (isCenter ? 0.6 : 1) : 0.35
+                  return (
+                    <circle
+                      key={axisIdx}
+                      cx={-2 + (104 * axisIdx) / AXIS_MAX}
+                      cy="50"
+                      r={isSelected ? 4.2 : 3.2}
+                      fill={horizontalMarkerFill}
+                      opacity={opacity}
+                      stroke={isSelected ? "white" : undefined}
+                      strokeWidth={isSelected ? 1.2 : 0}
+                    />
+                  )
+                })}
+              </>
+            ) : horizontalMarkerIndex != null && controlledHorizontalAxisState === "activeColor" ? (
               <circle
                 cx={-2 + (104 * horizontalMarkerIndex) / AXIS_MAX}
                 cy="50"
@@ -474,7 +536,7 @@ export function QuadrantAxesModel({
               y="50"
               fontSize="6.6"
               fontWeight="700"
-              fill="black"
+              fill={horizontalAxisLabelFill}
               textAnchor="end"
               dominantBaseline="middle"
               opacity={controlledAxisLabelsOpacity}
@@ -486,7 +548,7 @@ export function QuadrantAxesModel({
               y="50"
               fontSize="6.6"
               fontWeight="700"
-              fill="black"
+              fill={horizontalAxisLabelFill}
               textAnchor="start"
               dominantBaseline="middle"
               opacity={controlledAxisLabelsOpacity}
@@ -505,7 +567,28 @@ export function QuadrantAxesModel({
               stroke={verticalAxisStroke}
               strokeWidth={verticalAxisStrokeWidth}
             />
-            {verticalMarkerIndex != null && controlledVerticalAxisState === "activeColor" ? (
+            {(mode === "singleAxisQuiz" || mode === "axesAssessment") && isVerticalFocus ? (
+              <>
+                {[0, 1, 2, 3, 4].map((idx) => {
+                  const axisIdx = idx as AxisIndex
+                  const isSelected = axisIdx === verticalMarkerIndex
+                  const isCenter = axisIdx === AXIS_CENTER
+                  const opacity = isSelected ? (isCenter ? 0.6 : 1) : 0.35
+                  return (
+                    <circle
+                      key={axisIdx}
+                      cx="50"
+                      cy={-2 + (104 * axisIdx) / AXIS_MAX}
+                      r={isSelected ? 4.2 : 3.2}
+                      fill={verticalMarkerFill}
+                      opacity={opacity}
+                      stroke={isSelected ? "white" : undefined}
+                      strokeWidth={isSelected ? 1.2 : 0}
+                    />
+                  )
+                })}
+              </>
+            ) : verticalMarkerIndex != null && controlledVerticalAxisState === "activeColor" ? (
               <circle
                 cx="50"
                 cy={-2 + (104 * verticalMarkerIndex) / AXIS_MAX}
@@ -519,7 +602,7 @@ export function QuadrantAxesModel({
               y="-11"
               fontSize="6.6"
               fontWeight="700"
-              fill="black"
+              fill={verticalAxisLabelFill}
               textAnchor="middle"
               dominantBaseline="central"
               opacity={controlledAxisLabelsOpacity}
@@ -531,7 +614,7 @@ export function QuadrantAxesModel({
               y="111"
               fontSize="6.6"
               fontWeight="700"
-              fill="black"
+              fill={verticalAxisLabelFill}
               textAnchor="middle"
               dominantBaseline="central"
               opacity={controlledAxisLabelsOpacity}
@@ -541,11 +624,34 @@ export function QuadrantAxesModel({
           </g>
         </svg>
       )}
+      {(mode === "singleAxisQuiz" || mode === "axesAssessment") && onAxisIndexChange && isHorizontalFocus ? (
+          <button
+            type="button"
+            className={cn(
+              "absolute left-0 right-0 top-1/2 z-30 -translate-y-1/2 rounded-md py-10",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            )}
+            aria-label="Set horizontal axis position"
+            onClick={handleHorizontalAxisClick}
+          />
+      ) : null}
+      {(mode === "singleAxisQuiz" || mode === "axesAssessment") && onAxisIndexChange && isVerticalFocus ? (
+          <button
+            type="button"
+            className={cn(
+              "absolute top-0 bottom-0 left-1/2 z-30 -translate-x-1/2 rounded-md px-10",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            )}
+            aria-label="Set vertical axis position"
+            onClick={handleVerticalAxisClick}
+          />
+      ) : null}
 
       <div
         className={cn(
           "grid h-full w-full min-h-0 grid-cols-2 grid-rows-2",
-          mode === "book" && !bookShowAxes ? "gap-4 bg-[#fff8ec] p-3 sm:gap-5 sm:p-4" : "gap-5 p-[50px]",
+          mode === "singleAxisQuiz" ? "relative z-10" : undefined,
+          mode === "book" && !bookShowAxes ? "gap-4 p-3 sm:gap-5 sm:p-4" : "gap-5 p-[50px]",
           mode === "placeholderHidden" ? "opacity-0" : "opacity-100"
         )}
         style={mode === "book" && !bookShowAxes ? undefined : { padding: 50 }}
@@ -627,7 +733,9 @@ export function QuadrantAxesModel({
                       ? "opacity-100"
                       : "opacity-35"
 
-          const isClickable = mode === "book"
+          const isBookFlippable = mode === "book" && bookFlippable
+          // Clicking can either flip (book mode) or act as the drop target (bookDropActive).
+          const isClickable = mode === "book" && (isBookFlippable || bookDropActive)
 
           const tileClassName = cn(
             baseTile,
@@ -759,7 +867,9 @@ export function QuadrantAxesModel({
                     ? `${QUADRANT_LABELS[q]}`
                     : bookSelectedActivityId
                       ? `Place activity in ${QUADRANT_PLAY_CATEGORY_TILES[q].label}`
-                      : `Flip ${QUADRANT_PLAY_CATEGORY_TILES[q].label} card`
+                      : isBookFlippable
+                        ? `Flip ${QUADRANT_PLAY_CATEGORY_TILES[q].label} card`
+                        : `Quadrant tile: ${QUADRANT_PLAY_CATEGORY_TILES[q].label}`
                   : undefined
               }
               onKeyDown={
@@ -779,7 +889,7 @@ export function QuadrantAxesModel({
                         onBookTileActivityDrop!(q, bookSelectedActivityId)
                         return
                       }
-                      onToggleFlip(q)
+                      if (isBookFlippable) onToggleFlip(q)
                     }
                   : undefined
               }
@@ -853,6 +963,15 @@ export function QuadrantAxesModel({
                     </div>
                   </div>
                 )
+              ) : mode === "singleAxisQuiz" ? (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 px-3 py-5 text-center">
+                  <span className="text-[3.25rem] leading-none sm:text-[4rem]" aria-hidden>
+                    {QUADRANT_PLAY_CATEGORY_TILES[q].icon}
+                  </span>
+                  <span className="font-serif text-[1.35rem] font-medium lowercase leading-snug text-black sm:text-[1.65rem]">
+                    {QUADRANT_PLAY_CATEGORY_TILES[q].label}
+                  </span>
+                </div>
               ) : null}
             </div>
           )

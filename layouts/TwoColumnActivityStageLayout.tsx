@@ -13,9 +13,9 @@ export type TwoColumnActivityStageLayoutProps = {
    */
   topTitleVisible?: boolean
   /**
-   * When `true`, always reserve vertical space for the title wrapper (even when hidden).
-   * Defaults to `true` when `topTitle` is provided.
-   * Set to `false` for pages that never show a title area.
+   * When `true`, reserve vertical space for the title wrapper (even when hidden).
+   * Defaults to `true` (title space is always reserved to avoid upward layout shift).
+   * Set to `false` for pages that truly have no title area.
    */
   reserveTopTitleSpace?: boolean
 
@@ -49,20 +49,20 @@ export function TwoColumnActivityStageLayout({
   reserveTopTitleSpace,
   leftContent,
   rightContent,
-  leftVerticalAlign = "start",
+  leftVerticalAlign = "center",
   className,
   contentClassName,
   rightFrameClassName,
 }: TwoColumnActivityStageLayoutProps) {
-  const shouldReserveTitleSpace = reserveTopTitleSpace ?? Boolean(topTitle)
-  const shouldRenderTitleWrapper = shouldReserveTitleSpace || topTitle != null
+  const shouldRenderTitleWrapper = reserveTopTitleSpace === false ? topTitle != null : true
+  const shouldApplyLeftPaddingAndStretch = reserveTopTitleSpace === false && leftVerticalAlign === "start"
 
   return (
     <section className={cn("w-full", className)}>
       {shouldRenderTitleWrapper ? (
         <div
           className={cn(
-            "mb-8 w-full max-w-3xl text-left",
+            "mb-8 min-h-20 w-full max-w-3xl mx-auto text-left",
             // Preserve height when "hidden" without removing from layout flow.
             !topTitleVisible && "invisible"
           )}
@@ -71,6 +71,7 @@ export function TwoColumnActivityStageLayout({
         </div>
       ) : null}
 
+      {/* Content Area */}
       <div
         className={cn(
           "grid w-full gap-8 md:grid-cols-2",
@@ -79,21 +80,26 @@ export function TwoColumnActivityStageLayout({
           contentClassName
         )}
       >
+        {/* Left Column */}
         <div
           className={cn(
-            "flex w-full",
+            "flex w-full justify-center",
             leftVerticalAlign === "center" ? "items-center" : "items-start"
           )}
         >
-          <div className="w-full">{leftContent}</div>
+          {/* Only apply stretch + extra top/bottom padding when left-aligned. */}
+          <div className={cn("w-full", shouldApplyLeftPaddingAndStretch && "h-full pt-5 pb-5")}>
+            {leftContent}
+          </div>
         </div>
 
+        {/* Right Column */}  
         <div className="flex w-full items-stretch">
           <div
             className={cn(
               // Shared "model book" frame — softly elevated card with subtle border and tint.
-              "relative w-full rounded-3xl border border-black/10 bg-white/70",
-              "p-4 shadow-[0_24px_80px_rgba(15,23,42,0.28)] backdrop-blur-sm",
+              "relative w-full rounded-3xl",
+              "p-4",
               "sm:p-5 md:p-6",
               rightFrameClassName
             )}
