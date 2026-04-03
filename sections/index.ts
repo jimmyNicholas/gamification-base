@@ -29,9 +29,11 @@ export { ChaosPage, type ChaosPageProps } from "@/sections/demo/chaos/chaos-page
 
 export { RecognitionPage, type RecognitionPageProps } from "@/sections/recog/recognition-page"
 
+export { PostRecognitionPage, type PostRecognitionPageProps } from "@/sections/recog/post-recognition-page"
+
 export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"
 
-export { QuadrantsBookPage, type QuadrantsBookPageProps } from "@/sections/demo/quadrants-axes/quadrants-book-page"
+export { AxisPage, type AxisPageProps } from "@/sections/reflection/axis-page"
 
 export { AxisAgencyFatePage, type AxisAgencyFatePageProps } from "@/sections/demo/quadrants-axes/axis-agency-fate-page"
 

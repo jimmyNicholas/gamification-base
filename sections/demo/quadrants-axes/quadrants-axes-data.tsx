@@ -1,4 +1,7 @@
+import type { ReactNode } from "react"
+
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
+import React from "react"
 
 export type SituationTemplate = {
   heading: string
@@ -22,7 +25,8 @@ export type AssessmentSituation = SituationTemplate & {
 
 export type QuadrantBookCard = {
   front: string
-  back: string
+  /** Flip side — use a styled `<div>` (or string) so copy can be structured and styled. */
+  back: ReactNode
 }
 
 /** Caillois play-type labels + emoji for compact tiles (match reveal, book without axes). */
@@ -38,19 +42,63 @@ export const QUADRANT_RANK_BEST_TO_WORST: QuadrantId[] = ["Q1", "Q2", "Q3", "Q4"
 export const QUADRANT_BOOK_CARDS: Partial<Record<QuadrantId, QuadrantBookCard>> = {
   Q1: {
     front: "Agency + Self-intact",
-    back: "Games where one player or team wins by outperforming the others. Examples: races, quizzes, spelling bees, timed drills, leaderboards, debates, trivia."
+    back: (  
+      <div className="text-left leading-relaxed space-y-4">
+        <div>
+         <h3 className="text-lg font-bold">Competition 🏆</h3>
+          <p>Games where one player or team wins by outperforming the others.</p>
+        </div>
+        <div>
+          <h3 className="text-md font-bold">Examples:</h3>
+          <p>races, quizzes, spelling bees, timed drills,leaderboards, debates, trivia.</p>
+        </div>
+      </div>
+    ),
   },
   Q2: {
+    // Games where students become someone else.
+    // Examples: skits, gestures, email response writing, situational acting
     front: "Agency + Self-dissolved",
-    back: "Students are expressive and self-driven, but emotional safety is fragile. Activities can feel playful yet retention may drop.",
+    back: (
+      <div className="text-left leading-relaxed space-y-4">
+      <div>
+       <h3 className="text-lg font-bold">Roleplay 🎭</h3>
+        <p>Games where students become someone else.</p>
+      </div>
+      <div>
+        <h3 className="text-md font-bold">Examples:</h3>
+        <p>skits, gestures, email response writing, situational acting</p>
+      </div>
+    </div>
+    ),
   },
   Q3: {
+    // Games where the outcome depends on luck rather than skill. 
+    // Examples: dice, cards, spinning wheels, coins, envelopes, raffles
     front: "Fate + Self-intact",
-    back: "Students benefit from structure and predictable outcomes. Instruction is guided by rules; practice becomes systematic.",
+    back:  <div className="text-left leading-relaxed space-y-4">
+    <div>
+     <h3 className="text-lg font-bold">Chance 🎲</h3>
+      <p>Games where the outcome depends on luck rather than skill.</p>
+    </div>
+    <div>
+      <h3 className="text-md font-bold">Examples:</h3>
+      <p>dice, cards, spinning wheels, coins, envelopes, raffles</p>
+    </div>
+  </div>,
   },
   Q4: {
     front: "Fate + Self-dissolved",
-    back: "Students react to uncertainty and disruption. Energetic engagement can come with weaker consolidation of learning goals.",
+    back:  <div className="text-left leading-relaxed space-y-4">
+    <div>
+     <h3 className="text-lg font-bold">Chaos 💥</h3>
+      <p>Games designed to disorient, energise, or disrupt normal thinking.</p>
+    </div>
+    <div>
+      <h3 className="text-md font-bold">Examples:</h3>
+      <p>rapid movement, running, speed, surprise, things that overwhelm</p>
+    </div>
+  </div>
   },
 }
 
@@ -175,4 +223,3 @@ export const AXES_ASSESSMENT_SITUATIONS: AssessmentSituation[] = [
     },
   },
 ]
-

@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
+import { QUADRANT_PLAY_CATEGORY_TILES } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
 
 type ModelMode = "placeholderHidden" | "matchReveal" | "book" | "singleAxisQuiz" | "axesAssessment" | "wireframe" | "controlled"
 
@@ -37,6 +38,14 @@ const QUADRANT_THEME: Record<QuadrantId, { bg: string; border: string }> = {
   Q2: { bg: "bg-violet-50/90", border: "border-violet-500/70" },
   Q3: { bg: "bg-emerald-50/90", border: "border-emerald-500/70" },
   Q4: { bg: "bg-pink-50/90", border: "border-pink-500/70" },
+}
+
+/** Book mode with `bookShowAxes: false` — pale fills + thin borders (Caillois category tiles). */
+const BOOK_CATEGORY_TILE_SURFACE: Record<QuadrantId, string> = {
+  Q1: "rounded-2xl border border-amber-400/90 bg-[#fffbeb] shadow-[0_1px_0_rgba(0,0,0,0.04)]",
+  Q2: "rounded-2xl border border-violet-400/75 bg-violet-50/95 shadow-[0_1px_0_rgba(0,0,0,0.04)]",
+  Q3: "rounded-2xl border border-teal-500/60 bg-emerald-50/95 shadow-[0_1px_0_rgba(0,0,0,0.04)]",
+  Q4: "rounded-2xl border border-rose-400/80 bg-pink-50/95 shadow-[0_1px_0_rgba(0,0,0,0.04)]",
 }
 
 /** Recognition right column: category fill + border when a left tile is selected (~60% border opacity). */
@@ -120,7 +129,7 @@ function inferQuadrantPairForSingleAxis(focusAxis: AxisFocus, valueIndex: number
   return valueIndex <= 1 ? ["Q1", "Q3"] : ["Q2", "Q4"]
 }
 
-type BookCard = { front: string; back: string }
+type BookCard = { front: string; back: React.ReactNode }
 
 /** Simple emoji + label, or a full custom tile (e.g. Match the Four outcome previews). */
 export type MatchRevealCard =
@@ -141,6 +150,20 @@ export type QuadrantAxesModelProps = {
 
   // Used by book mode.
   bookCards?: Partial<Record<QuadrantId, BookCard>>
+  /** When `mode` is `book`, show axes and Agency/Fate labels. Set `false` for category-only tiles (Caillois styling). */
+  bookShowAxes?: boolean
+  /** Controlled flip state for book mode (use with `onBookFlipToggle`). */
+  bookFlipped?: Partial<Record<QuadrantId, boolean>>
+  onBookFlipToggle?: (q: QuadrantId) => void
+  /** Rendered below the icon + label on the unflipped Caillois book face. */
+  bookFrontExtra?: Partial<Record<QuadrantId, React.ReactNode>>
+  /** `getData("text/plain")` activity id on drop. */
+  onBookTileActivityDrop?: (q: QuadrantId, activityId: string) => void
+  /**
+   * Book mode + `onBookTileActivityDrop`: when set, clicking a category tile places this activity
+   * (same as drop) instead of flipping. Omit or `null` to flip on click.
+   */
+  bookSelectedActivityId?: string | null
   // Used by match-reveal mode.
   matchRevealCards?: Partial<Record<QuadrantId, MatchRevealCard>>
   /** Per display cell, which quadrant key to read from `matchRevealCards` (shuffle without moving axes). */
@@ -178,6 +201,12 @@ export function QuadrantAxesModel({
   verticalIndex,
   focusAxis = "horizontal",
   bookCards,
+  bookShowAxes = true,
+  bookFlipped: bookFlippedControlled,
+  onBookFlipToggle,
+  bookFrontExtra,
+  onBookTileActivityDrop,
+  bookSelectedActivityId = null,
   matchRevealCards,
   matchRevealContentSource,
   matchRevealTilePalette = "theme",
@@ -287,26 +316,32 @@ export function QuadrantAxesModel({
 
   const axisVisibility = React.useMemo(() => {
     if (mode === "placeholderHidden" || mode === "matchReveal" || mode === "wireframe") return { horizontal: 0, vertical: 0 }
+    if (mode === "book" && !bookShowAxes) return { horizontal: 0, vertical: 0 }
     if (mode === "controlled") return { horizontal: horizontalAxisOpacity, vertical: verticalAxisOpacity }
     if (mode === "singleAxisQuiz") {
       return focusAxis === "horizontal" ? { horizontal: 1, vertical: 0.25 } : { horizontal: 0.25, vertical: 1 }
     }
-    // book, axesAssessment
+    // book (with axes), axesAssessment
     return { horizontal: 1, vertical: 1 }
-  }, [mode, focusAxis, horizontalAxisOpacity, verticalAxisOpacity])
+  }, [mode, bookShowAxes, focusAxis, horizontalAxisOpacity, verticalAxisOpacity])
 
   const showQuadrantTiles = mode !== "placeholderHidden"
 
-  const [flipped, setFlipped] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
+  const [internalBookFlipped, setInternalBookFlipped] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
+  const bookFlipped = bookFlippedControlled ?? internalBookFlipped
 
   // Keep flips stable within the book step (session refresh resilience not required yet).
   React.useEffect(() => {
-    if (mode !== "book") setFlipped({})
+    if (mode !== "book") setInternalBookFlipped({})
   }, [mode])
 
   const onToggleFlip = (q: QuadrantId) => {
     if (mode !== "book") return
-    setFlipped((prev) => ({ ...prev, [q]: !prev[q] }))
+    if (onBookFlipToggle) {
+      onBookFlipToggle(q)
+    } else {
+      setInternalBookFlipped((prev) => ({ ...prev, [q]: !prev[q] }))
+    }
   }
 
   const bookCard = (q: QuadrantId): BookCard => {
@@ -509,10 +544,11 @@ export function QuadrantAxesModel({
 
       <div
         className={cn(
-          "grid h-full w-full min-h-0 grid-cols-2 grid-rows-2 gap-5 p-[50px]",
+          "grid h-full w-full min-h-0 grid-cols-2 grid-rows-2",
+          mode === "book" && !bookShowAxes ? "gap-4 bg-[#fff8ec] p-3 sm:gap-5 sm:p-4" : "gap-5 p-[50px]",
           mode === "placeholderHidden" ? "opacity-0" : "opacity-100"
         )}
-        style={{ padding: 50 }}
+        style={mode === "book" && !bookShowAxes ? undefined : { padding: 50 }}
       >
         {quadrantsInOrder.map((q) => {
           const { bg: themeBg, border: themeBorder } = QUADRANT_THEME[q]!
@@ -529,6 +565,7 @@ export function QuadrantAxesModel({
           const isMatchRevealRightInteractive =
             mode === "matchReveal" && onMatchRevealRightClick != null && matchRevealTilePalette === "neutralGrey"
           const isRightMatched = matchRevealRightMatched?.has(q) ?? false
+          const bookDropActive = mode === "book" && onBookTileActivityDrop != null
 
           const defaultMatchRevealHighlight = cn("border-2 bg-white/10", themeBorder, themeBg)
           const matchRevealHighlightTile =
@@ -564,11 +601,13 @@ export function QuadrantAxesModel({
                       : cn("border-2", themeBorder, themeBg, "ring-1 ring-black/10")
                 : mode === "matchReveal" && isHighlighted
                   ? matchRevealHighlightTile
-                  : cn(
-                      "border-2 bg-white/10",
-                      themeBorder,
-                      mode === "placeholderHidden" ? "bg-transparent" : mode === "matchReveal" ? "bg-transparent" : themeBg
-                    )
+                  : mode === "book" && !bookShowAxes
+                    ? BOOK_CATEGORY_TILE_SURFACE[q]
+                    : cn(
+                        "border-2 bg-white/10",
+                        themeBorder,
+                        mode === "placeholderHidden" ? "bg-transparent" : mode === "matchReveal" ? "bg-transparent" : themeBg
+                      )
           )
 
           const tileOpacity =
@@ -582,9 +621,11 @@ export function QuadrantAxesModel({
                   ? showQuadrantTiles && isHighlighted
                     ? "opacity-100"
                     : "opacity-0"
-                  : isHighlighted
+                  : mode === "book"
                     ? "opacity-100"
-                    : "opacity-35"
+                    : isHighlighted
+                      ? "opacity-100"
+                      : "opacity-35"
 
           const isClickable = mode === "book"
 
@@ -593,9 +634,14 @@ export function QuadrantAxesModel({
             tileOpacity,
             "transition-[opacity,box-shadow]",
             isClickable || isMatchRevealSelectable || isMatchRevealRightInteractive ? "cursor-pointer" : "cursor-default",
-            mode === "matchReveal" && isHighlighted && "min-h-0 h-full max-h-full",
+            (mode === "matchReveal" && isHighlighted) || (mode === "book" && !bookShowAxes)
+              ? "min-h-0 h-full max-h-full"
+              : undefined,
             isMatchRevealSelectable &&
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
+            bookDropActive && bookSelectedActivityId
+              ? "ring-2 ring-blue-600 ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              : undefined
           )
 
           const gridStyle = { gridColumn: QUADRANT_LAYOUT[q]!.col + 1, gridRow: QUADRANT_LAYOUT[q]!.row + 1 }
@@ -703,18 +749,85 @@ export function QuadrantAxesModel({
           return (
             <div
               key={q}
-              className={tileClassName}
+              className={cn(tileClassName, bookDropActive && "transition-shadow")}
               style={gridStyle}
               role={isClickable ? "button" : undefined}
-              aria-label={mode === "book" ? `${QUADRANT_LABELS[q]}` : undefined}
-              onClick={isClickable ? () => onToggleFlip(q) : undefined}
+              tabIndex={isClickable && bookDropActive && bookSelectedActivityId ? 0 : undefined}
+              aria-label={
+                mode === "book"
+                  ? bookShowAxes
+                    ? `${QUADRANT_LABELS[q]}`
+                    : bookSelectedActivityId
+                      ? `Place activity in ${QUADRANT_PLAY_CATEGORY_TILES[q].label}`
+                      : `Flip ${QUADRANT_PLAY_CATEGORY_TILES[q].label} card`
+                  : undefined
+              }
+              onKeyDown={
+                isClickable && bookDropActive && bookSelectedActivityId
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        onBookTileActivityDrop!(q, bookSelectedActivityId)
+                      }
+                    }
+                  : undefined
+              }
+              onClick={
+                isClickable
+                  ? () => {
+                      if (bookDropActive && bookSelectedActivityId) {
+                        onBookTileActivityDrop!(q, bookSelectedActivityId)
+                        return
+                      }
+                      onToggleFlip(q)
+                    }
+                  : undefined
+              }
+              onDragOver={
+                bookDropActive
+                  ? (e) => {
+                      e.preventDefault()
+                      e.dataTransfer.dropEffect = "move"
+                    }
+                  : undefined
+              }
+              onDrop={
+                bookDropActive
+                  ? (e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      const id = e.dataTransfer.getData("text/plain").trim()
+                      if (id) onBookTileActivityDrop!(q, id)
+                    }
+                  : undefined
+              }
             >
               {mode === "book" ? (
-                <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
-                  <div className={cn("text-sm font-bold leading-snug text-black", isHighlighted ? "opacity-100" : "opacity-90")}>
-                    {flipped[q] ? bookCard(q).back : bookCard(q).front}
+                bookShowAxes ? (
+                  <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
+                    <div className={cn("text-sm font-bold leading-snug text-black", isHighlighted ? "opacity-100" : "opacity-90")}>
+                      {bookFlipped[q] ? bookCard(q).back : bookCard(q).front}
+                    </div>
                   </div>
-                </div>
+                ) : bookFlipped[q] ? (
+                  <div className="flex h-full min-h-0 w-full flex-col justify-center overflow-auto p-3 text-left text-xs leading-relaxed text-black/90 sm:p-4 sm:text-sm">
+                    {bookCard(q).back}
+                  </div>
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 px-3 py-5 text-center">
+                    <span className="text-[3.25rem] leading-none sm:text-[4rem]" aria-hidden>
+                      {QUADRANT_PLAY_CATEGORY_TILES[q].icon}
+                    </span>
+                    <span className="font-serif text-[1.35rem] font-medium lowercase leading-snug text-black sm:text-[1.65rem]">
+                      {QUADRANT_PLAY_CATEGORY_TILES[q].label}
+                    </span>
+                    {bookFrontExtra?.[q] ? (
+                      <div className="mt-2 w-full max-w-[95%] border-t border-black/15 pt-2 text-left text-[0.7rem] leading-snug text-black/85 sm:text-xs">
+                        {bookFrontExtra[q]}
+                      </div>
+                    ) : null}
+                  </div>
+                )
               ) : mode === "matchReveal" && isHighlighted && matchRevealCard ? (
                 "fullTile" in matchRevealCard ? (
                   <div className="flex max-h-full min-h-0 w-full max-w-full flex-col items-center justify-center overflow-auto p-3 text-center text-black">

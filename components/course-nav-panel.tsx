@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  Compass,
   Copy,
   Dices,
   Layers,
@@ -24,6 +25,7 @@ export type CoursePhase =
   | "mimicry"
   | "chaos"
   | "recognition"
+  | "postRecognition"
   | "book"
   | "axisAgencyFate"
   | "axisSelfIntactDissolved"
@@ -46,6 +48,7 @@ const NAV_ITEMS: {
     label: "Recognition",
     Icon: Layers,
   },
+  { phase: "postRecognition", label: "Explore quadrants", Icon: Compass },
   { phase: "book", label: "Book (Quadrants)", Icon: LayoutGrid },
   { phase: "axisAgencyFate", label: "Agency ↔ Fate", Icon: Dices },
   { phase: "axisSelfIntactDissolved", label: "Self-intact ↔ Dissolved", Icon: Copy },

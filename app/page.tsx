@@ -16,8 +16,9 @@ import {
   initialDemoMatchOutcomes,
   IntroPage,
   RecognitionPage,
+  PostRecognitionPage,
   MimicryPage,
-  QuadrantsBookPage,
+  AxisPage,
   AxisAgencyFatePage,
   AxisSelfIntactDissolvedPage,
   AxesAssessmentPage,
@@ -78,6 +79,10 @@ export default function Home() {
     setPhase("recognition")
   }, [])
 
+  const goToPostRecognition = useCallback(() => {
+    setPhase("postRecognition")
+  }, [])
+
   const goToBook = useCallback(() => {
     setPhase("book")
   }, [])
@@ -122,9 +127,11 @@ export default function Home() {
   } else if (phase === "chaos") {
     main = <ChaosPage onContinue={goToRecognitionFromChaos} />
   } else if (phase === "recognition") {
-    main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToBook} />
+    main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToPostRecognition} />
+  } else if (phase === "postRecognition") {
+    main = <PostRecognitionPage onContinue={goToBook} />
   } else if (phase === "book") {
-    main = <QuadrantsBookPage onContinue={goToAxisAgencyFate} />
+    main = <AxisPage onContinue={goToAxisAgencyFate} />
   } else if (phase === "axisAgencyFate") {
     main = <AxisAgencyFatePage onContinue={goToAxisSelfIntactDissolved} />
   } else if (phase === "axisSelfIntactDissolved") {
