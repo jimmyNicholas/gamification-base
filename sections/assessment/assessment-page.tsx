@@ -9,6 +9,7 @@ import {
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
 import type { AssessmentSituation } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
+import { QUADRANT_PLAY_CATEGORY_TILES } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
 import { ReflectionLayout } from "@/sections/reflection/reflection-layout"
 import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLayout"
 import { cn } from "@/lib/utils"
@@ -44,13 +45,20 @@ function nextStep(step: AssessmentPageStep): AssessmentPageStep {
 // Data
 // ---------------------------------------------------------------------------
 
-const ASSESSMENT_SITUATIONS: AssessmentSituation[] = [
+type AssessmentSituationWithIdeal = AssessmentSituation & {
+  idealQuadrant: QuadrantId
+  rationale: string
+}
+
+const ASSESSMENT_SITUATIONS: AssessmentSituationWithIdeal[] = [
   {
     heading: "Relaxed prep",
     level: "Upper-Intermediate",
     topic: "Illnesses and injuries",
     situation:
       "It is Sunday evening. You have an upper-intermediate class tomorrow morning on illnesses and injuries. You have time to prepare properly. The group is established, motivated, and gets along well. You want to run a game in the second hour to consolidate vocabulary from last week. Which quadrant fits this situation?",
+    idealQuadrant: "Q1",
+    rationale: "Competition works best here. The group is motivated and established, and systematic vocabulary consolidation needs structured challenge with clear outcomes—perfect for competition's agency + self-intact combination.",
     consequences: {
       Q1: "You run a vocabulary auction. Teams bid on sentences they think use the illness and injury vocabulary correctly. The class engages well. The vocabulary consolidates. Students leave energised.",
       Q2: "You run a doctor-patient roleplay using the target vocabulary. It runs well but the vocabulary feels incidental. Students enjoy inhabiting the characters but retention is lower than you hoped.",
@@ -64,6 +72,8 @@ const ASSESSMENT_SITUATIONS: AssessmentSituation[] = [
     topic: "Climate and weather",
     situation:
       "A colleague finds you at the break. Their CAE class has just finished an intense reading test on climate and weather. They have an hour left and no ideas. The group is small and tight-knit and the students know each other well. What would you suggest? Which quadrant fits this situation?",
+    idealQuadrant: "Q2",
+    rationale: "Roleplay is ideal after an intense test with a tight-knit group. Students need agency to engage but self-dissolved activities (inhabiting characters) lift energy without adding pressure—exactly what's needed here.",
     consequences: {
       Q2: "Your colleague runs a short roleplay. Students take on the role of a climate journalist interviewing a sceptic. The group settle into it easily. Energy lifts after the test. Your colleague messages you later to say it was exactly what they needed.",
       Q1: "Your colleague runs a debate on environmental policy. It works but a few students who are still tired from the test don't fully engage. Fine, but not energising.",
@@ -77,6 +87,8 @@ const ASSESSMENT_SITUATIONS: AssessmentSituation[] = [
     topic: "Food",
     situation:
       "It is 6:30am on a Friday. Your DOS calls. A teacher is sick and she asks if you can cover a class. It starts at 8:30am. The group is elementary level and the topic is food. You do not know the group. You need a warmer to get things started. Which quadrant fits this situation?",
+    idealQuadrant: "Q3",
+    rationale: "Chance activities are perfect for low-pressure warmers with unfamiliar groups. Random outcomes remove performance pressure while students stay themselves (self-intact)—the warmer runs itself without requiring trust or energy.",
     consequences: {
       Q3: "You run a picture card sort. Students randomly draw food cards and group them into categories. The warmer runs itself. The group warms up without any pressure. You find your footing before the main lesson begins.",
       Q4: "You try a quick mime game. Students mime a food randomly assigned to them. A few students look uncertain about performing for a teacher they have never met at 8:30am. The warmer runs but takes longer than expected.",
@@ -90,6 +102,8 @@ const ASSESSMENT_SITUATIONS: AssessmentSituation[] = [
     topic: "Modals of advice",
     situation:
       "You are mid-lesson with a pre-intermediate class working on modals of advice. The activity you planned is not working. The room is flat. Students are compliant but not engaged. You have 20 minutes left. You need to pivot right now. Which quadrant fits this moment?",
+    idealQuadrant: "Q4",
+    rationale: "Chaos activities work when you need to break a flat mood fast. Random, playful tasks with self-dissolved freedom let students stop monitoring themselves and just react—exactly what's needed to shift stuck energy in the moment.",
     consequences: {
       Q4: "You call a quick improv problem circle. Students are randomly assigned a ridiculous problem and the class shouts advice using modals. Something shifts in the room. Students stop monitoring themselves and just play. The energy carries through to the end of the lesson.",
       Q3: "You spin a wheel to choose who gives advice on a random scenario. Some movement but the room does not fully recover. Students participate but stay flat.",
@@ -153,7 +167,7 @@ export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange
 
   const slot = situationSlot(step)
   const dataIndex = slot >= 0 ? situationOrder[slot] : -1
-  const currentSituation: AssessmentSituation | null = dataIndex >= 0 ? ASSESSMENT_SITUATIONS[dataIndex] : null
+  const currentSituation: AssessmentSituationWithIdeal | null = dataIndex >= 0 ? ASSESSMENT_SITUATIONS[dataIndex] : null
 
   const liveQuadrant = inferQuadrantFromAxes(horizontalIndex, verticalIndex)
   const liveConsequence =
@@ -233,14 +247,47 @@ export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange
 
           {/* Consequence — only visible after submit, but updates live as axes move */}
           {submitted ? (
-            <div className="rounded-xl border border-black/10 bg-white/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-black/55">Consequence</p>
-              {liveConsequence ? (
-                <p className="mt-2 text-sm leading-relaxed text-black/85">{liveConsequence}</p>
-              ) : (
-                <p className="mt-2 text-sm text-black/70">
-                  Move both axes away from centre to see a consequence.
-                </p>
+            <div className="flex flex-col gap-4">
+              <div className="rounded-xl border border-black/10 bg-white/50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-black/55">Your Choice</p>
+                {liveQuadrant && liveConsequence ? (
+                  <>
+                    <p className="mt-1 font-semibold text-black">
+                      {QUADRANT_PLAY_CATEGORY_TILES[liveQuadrant].icon} {QUADRANT_PLAY_CATEGORY_TILES[liveQuadrant].label.charAt(0).toUpperCase() + QUADRANT_PLAY_CATEGORY_TILES[liveQuadrant].label.slice(1)}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-black/85">{liveConsequence}</p>
+                  </>
+                ) : (
+                  <p className="mt-2 text-sm text-black/70">
+                    Move both axes away from centre to see a consequence.
+                  </p>
+                )}
+              </div>
+
+              {liveQuadrant && currentSituation && (
+                <div className={cn(
+                  "rounded-xl border p-4",
+                  liveQuadrant === currentSituation.idealQuadrant
+                    ? "border-green-500/40 bg-green-50/60"
+                    : "border-amber-500/40 bg-amber-50/60"
+                )}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-black/55">
+                    {liveQuadrant === currentSituation.idealQuadrant ? "✓ Ideal match" : "Suggested alternative"}
+                  </p>
+                  {liveQuadrant !== currentSituation.idealQuadrant && (
+                    <>
+                      <p className="mt-1 font-semibold text-black">
+                        {QUADRANT_PLAY_CATEGORY_TILES[currentSituation.idealQuadrant].icon} {QUADRANT_PLAY_CATEGORY_TILES[currentSituation.idealQuadrant].label.charAt(0).toUpperCase() + QUADRANT_PLAY_CATEGORY_TILES[currentSituation.idealQuadrant].label.slice(1)}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-black/85">
+                        {currentSituation.consequences[currentSituation.idealQuadrant]}
+                      </p>
+                    </>
+                  )}
+                  <p className="mt-3 text-sm leading-relaxed text-black/75 italic">
+                    {currentSituation.rationale}
+                  </p>
+                </div>
               )}
             </div>
           ) : (

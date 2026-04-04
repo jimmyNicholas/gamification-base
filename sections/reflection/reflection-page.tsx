@@ -106,9 +106,10 @@ export function ReflectionPage({ onContinue }: ReflectionPageProps) {
         <div className="flex min-w-0 flex-1 flex-col gap-4 text-left">
           <div className="flex items-center gap-3">
             <PenLine className="size-6 text-black/70" aria-hidden />
-            <h2 className={demoActivityHeadingClassName}>Reflection</h2>
+            <h2 id="reflection-heading" className={demoActivityHeadingClassName}>Reflection</h2>
           </div>
           <textarea
+            aria-labelledby="reflection-heading"
             className="min-h-[220px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-black/90 outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
             placeholder=""
           />

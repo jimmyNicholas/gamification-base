@@ -176,7 +176,7 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
                   id="recognition-mini-reflection"
                   name="recognition-mini-reflection"
                   autoComplete="off"
-                  className="min-h-[200px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-sm leading-relaxed text-black/90 outline-none placeholder:text-black/40 focus-visible:ring-2 focus-visible:ring-blue-600 sm:min-h-[220px] sm:text-base"
+                  className="min-h-[200px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-sm leading-relaxed text-black/90 outline-none placeholder:text-black/55 focus-visible:ring-2 focus-visible:ring-blue-600 sm:min-h-[220px] sm:text-base"
                   placeholder="These notes are just for you. Nothing you write here is saved or assessed. We only record whether you used this space, not what you said. You can type here or skip entirely."
                 />
                 {onContinue ? (

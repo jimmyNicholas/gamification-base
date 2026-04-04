@@ -5,15 +5,11 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Combine,
-  Compass,
-  Copy,
   Dices,
-  Layers,
-  LayoutGrid,
-  LayoutList,
+  Lightbulb,
+  PenLine,
   Sparkles,
-  Trophy,
+  Target
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -38,20 +34,11 @@ const NAV_ITEMS: {
   Icon: typeof BookOpen
 }[] = [
   { phase: "intro", label: "Intro", Icon: BookOpen },
-  { phase: "demoOutline", label: "Outline", Icon: LayoutList },
-  { phase: "competitionActivity", label: "Activity", Icon: Trophy },
-  { phase: "chance", label: "Chance", Icon: Dices },
-  { phase: "mimicry", label: "Mimicry", Icon: Copy },
-  { phase: "chaos", label: "Chaos", Icon: Sparkles },
-  {
-    phase: "recognition",
-    label: "Recognition",
-    Icon: Layers,
-  },
-  { phase: "postRecognition", label: "Explore quadrants", Icon: Compass },
-  { phase: "book", label: "Book (Quadrants)", Icon: LayoutGrid },
-  { phase: "axisTogether", label: "Both axes", Icon: Combine },
-  { phase: "reflection", label: "Reflection", Icon: LayoutList },
+  { phase: "demoOutline", label: "Demo", Icon: Dices },
+  { phase: "recognition", label: "Recognition", Icon: Sparkles },
+  { phase: "book", label: "Analysis", Icon: Lightbulb },
+  { phase: "axisTogether", label: "Assessment", Icon: Target },
+  { phase: "reflection", label: "Reflection", Icon: PenLine },
 ]
 
 type CourseNavPanelProps = {

@@ -94,7 +94,7 @@ export function buildLeftCard(
           >
             <Image
               src={src}
-              alt=""
+              alt={label}
               width={density === "quadrant" ? 256 : 120}
               height={density === "quadrant" ? 256 : 120}
               className={

@@ -340,8 +340,8 @@ export function CustomTimedMatch({
                     if (!row) {
                       return (
                         <tr key={i} className="border-b border-black/10 last:border-0">
-                          <td className="py-2 pr-2 text-black/40">—</td>
-                          <td className="py-2 pl-2 text-black/40">—</td>
+                          <td className="py-2 pr-2 text-black/55">—</td>
+                          <td className="py-2 pl-2 text-black/55">—</td>
                         </tr>
                       )
                     }

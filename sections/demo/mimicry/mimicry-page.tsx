@@ -381,7 +381,7 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           placeholder={scene.freeform.placeholder}
                           value={freeformText}
                           onChange={(e) => setFreeformText(e.target.value)}
-                          className="min-h-[120px] w-full resize-y rounded-xl border border-black/20 bg-white px-3 py-2.5 text-base leading-snug text-black shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] outline-none placeholder:text-black/40 focus-visible:border-black/40 focus-visible:ring-2 focus-visible:ring-black/15"
+                          className="min-h-[120px] w-full resize-y rounded-xl border border-black/20 bg-white px-3 py-2.5 text-base leading-snug text-black shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] outline-none placeholder:text-black/55 focus-visible:border-black/40 focus-visible:ring-2 focus-visible:ring-black/15"
                         />
                         <p className={demoUiHelperTextClassName}>{scene.freeform.footnote}</p>
                         <Button

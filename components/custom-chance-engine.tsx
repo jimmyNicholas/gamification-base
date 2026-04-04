@@ -127,7 +127,7 @@ function QuadrantSlotGrid({
                   "flex flex-col items-center justify-center rounded-md border border-black/25 bg-white shadow-none"
                 )}
               >
-                <span className={cn(slotNumberClass, "text-black/45")}>{q}</span>
+                <span className={cn(slotNumberClass, "text-black/60")}>{q}</span>
               </div>
             ) : null}
             {isFuture ? (

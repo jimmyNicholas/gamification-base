@@ -65,7 +65,7 @@ function MatchCardMatchedStack({
 function CardKeyHint({ char }: { char: string }) {
   return (
     <span
-      className="pointer-events-none absolute right-2 top-2 z-10 text-[0.65rem] font-medium tabular-nums text-black/45 sm:right-2.5 sm:top-2.5"
+      className="pointer-events-none absolute right-2 top-2 z-10 text-[0.65rem] font-medium tabular-nums text-black/60 sm:right-2.5 sm:top-2.5"
       aria-hidden
     >
       {char}
