@@ -32,7 +32,6 @@ export type PostRecognitionPageProps = {
 
 /** Yellow recognition surface — placeholder copy left, quadrants book model right. After mini-reflection, before Quadrants Book. */
 export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
-  const [cards, setCards] = React.useState<Partial<Record<QuadrantId, { icon: string; label: string; back: React.ReactNode }>>>(FLIP_CARDS)
   const [cardFlipped, setCardFlipped] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
   const [everSeenBack, setEverSeenBack] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
   const [placedActivityById, setPlacedActivityById] = React.useState<Partial<Record<string, QuadrantId>>>({})
@@ -186,24 +185,13 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
           <div className="flex w-full min-w-0 justify-center">
             <QuadrantAxesModelV2
               mode="flipCard"
-              cards={cards}
+              cards={FLIP_CARDS}
               cardFlipped={Object.fromEntries(Object.entries(cardFlipped).map(([q, flipped]) => [q, flipped ?? false])) as Partial<Record<QuadrantId, boolean>>}
               onCardFlip={onBookFlipToggle}
               cardFrontExtra={cardFrontExtra}
               onActivityDrop={allCardsSeenBackOnce ? handleBookTileActivityDrop : undefined}
               selectedActivityId={allCardsSeenBackOnce ? selectedActivityId : null}
               />
-            {/* <QuadrantAxesModel
-              className="h-full w-full max-w-[620px]"
-              mode="book"
-              bookCards={QUADRANT_BOOK_CARDS}
-              bookShowAxes={false}
-              bookFlipped={bookFlipped}
-              onBookFlipToggle={onBookFlipToggle}
-              bookFrontExtra={bookFrontExtra}
-              onBookTileActivityDrop={allCardsSeenBackOnce ? handleBookTileActivityDrop : undefined}
-              bookSelectedActivityId={allCardsSeenBackOnce ? selectedActivityId : null}
-            /> */}
           </div>
         }
       />

@@ -19,8 +19,7 @@ import {
   PostRecognitionPage,
   MimicryPage,
   AxisPage,
-  AxisAgencyFatePage,
-  AxisSelfIntactDissolvedPage,
+  AssessmentPage,
   AxesAssessmentPage,
   ReflectionPage,
   type DemoMatchOutcomes,
@@ -93,12 +92,8 @@ export default function Home() {
     setPhase("demoOutline")
   }, [])
 
-  const goToAxisAgencyFate = useCallback(() => {
-    setPhase("axisAgencyFate")
-  }, [])
-
-  const goToAxisSelfIntactDissolved = useCallback(() => {
-    setPhase("axisSelfIntactDissolved")
+  const goToAxisTogetherIntro = useCallback(() => {
+    setPhase("axisTogether")
   }, [])
 
   const goToAxesAssessment = useCallback(() => {
@@ -131,11 +126,9 @@ export default function Home() {
   } else if (phase === "postRecognition") {
     main = <PostRecognitionPage onContinue={goToBook} />
   } else if (phase === "book") {
-    main = <AxisPage onContinue={goToAxisAgencyFate} />
-  } else if (phase === "axisAgencyFate") {
-    main = <AxisAgencyFatePage onContinue={goToAxisSelfIntactDissolved} />
-  } else if (phase === "axisSelfIntactDissolved") {
-    main = <AxisSelfIntactDissolvedPage onContinue={goToAxesAssessment} />
+    main = <AxisPage onContinue={goToAxisTogetherIntro} />
+  } else if (phase === "axisTogether") {
+    main = <AssessmentPage onContinue={goToAxesAssessment} />
   } else if (phase === "axesAssessment") {
     main = <AxesAssessmentPage onContinue={goToReflection} />
   } else if (phase === "reflection") {

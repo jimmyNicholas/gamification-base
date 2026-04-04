@@ -33,14 +33,13 @@ export { PostRecognitionPage, type PostRecognitionPageProps } from "@/sections/r
 
 export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"
 
-export { AxisPage, type AxisPageProps } from "@/sections/reflection/axis-page"
-
-export { AxisAgencyFatePage, type AxisAgencyFatePageProps } from "@/sections/demo/quadrants-axes/axis-agency-fate-page"
+export { AxisPage, type AxisPageProps, type AxisPageStep } from "@/sections/reflection/axis-page"
 
 export {
-  AxisSelfIntactDissolvedPage,
-  type AxisSelfIntactDissolvedPageProps,
-} from "@/sections/demo/quadrants-axes/axis-self-intact-dissolved-page"
+  AssessmentPage,
+  type AssessmentPageProps,
+  type AssessmentPageStep,
+} from "@/sections/assessment/assessment-page"
 
 export { AxesAssessmentPage, type AxesAssessmentPageProps } from "@/sections/demo/quadrants-axes/axes-assessment-page"
 

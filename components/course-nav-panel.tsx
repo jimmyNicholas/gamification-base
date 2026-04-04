@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  Combine,
   Compass,
   Copy,
   Dices,
@@ -27,8 +28,7 @@ export type CoursePhase =
   | "recognition"
   | "postRecognition"
   | "book"
-  | "axisAgencyFate"
-  | "axisSelfIntactDissolved"
+  | "axisTogether"
   | "axesAssessment"
   | "reflection"
 
@@ -50,9 +50,7 @@ const NAV_ITEMS: {
   },
   { phase: "postRecognition", label: "Explore quadrants", Icon: Compass },
   { phase: "book", label: "Book (Quadrants)", Icon: LayoutGrid },
-  { phase: "axisAgencyFate", label: "Agency ↔ Fate", Icon: Dices },
-  { phase: "axisSelfIntactDissolved", label: "Self-intact ↔ Dissolved", Icon: Copy },
-  { phase: "axesAssessment", label: "A+ Assessment", Icon: Trophy },
+  { phase: "axisTogether", label: "Both axes", Icon: Combine },
   { phase: "reflection", label: "Reflection", Icon: LayoutList },
 ]
 
