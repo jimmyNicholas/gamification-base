@@ -2,10 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react"
 
-import type { MatchRevealCard } from "@/components/quadrant-axes-model"
-import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
+import { QuadrantAxesModelV2, type CardContent } from "@/components/quadrant-axes-model-v2"
 import { QUADRANT_MATCH_REVEAL_CARDS } from "@/sections/demo/match-the-four/quadrant-match-reveal-cards"
-import { buildLeftCard } from "@/sections/demo/match-the-four/match-the-four-activity"
+import { buildLeftCard } from "@/sections/demo/match-the-four/build-left-card"
 import type { DemoMatchOutcomes } from "@/sections/demo/match-the-four/demo-match-outcomes"
 import { shuffleArray } from "@/sections/demo/shuffle-array"
 import { RecogLayout } from "@/sections/recog/recog-layout"
@@ -23,7 +22,7 @@ import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLa
 /** Same iteration order as `quadrantsInOrder` in `QuadrantAxesModel` (grid placement). */
 const MATCH_REVEAL_CELL_ORDER: readonly QuadrantId[] = ["Q1", "Q3", "Q2", "Q4"]
 
-function personalizedMatchRevealCards(outcomes: DemoMatchOutcomes): Record<QuadrantId, MatchRevealCard> {
+function personalizedMatchRevealCards(outcomes: DemoMatchOutcomes): Record<QuadrantId, CardContent> {
   const d = "compact" as const
   return {
     Q1: { fullTile: buildLeftCard(outcomes, "competition", d).content },
@@ -62,7 +61,7 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
   const outcomeCards = useMemo(() => personalizedMatchRevealCards(outcomes), [outcomes])
 
   /** Per-cell content matches `contentSource` so each tile pairs with the correct right category (same as V1 `matchRevealContentSource`). */
-  const leftMatchRevealCards = useMemo((): Record<QuadrantId, MatchRevealCard> => {
+  const leftMatchRevealCards = useMemo((): Record<QuadrantId, CardContent> => {
     return {
       Q1: outcomeCards[contentSource.Q1]!,
       Q2: outcomeCards[contentSource.Q2]!,
@@ -71,7 +70,7 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
     }
   }, [contentSource, outcomeCards])
 
-  const categoryCards: Record<QuadrantId, MatchRevealCard> = useMemo(
+  const categoryCards: Record<QuadrantId, CardContent> = useMemo(
     () => ({
       Q1: QUADRANT_MATCH_REVEAL_CARDS.Q1,
       Q2: QUADRANT_MATCH_REVEAL_CARDS.Q2,

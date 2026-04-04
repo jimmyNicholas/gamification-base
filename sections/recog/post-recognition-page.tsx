@@ -2,8 +2,6 @@
 
 import * as React from "react"
 
-import { QuadrantAxesModel } from "@/components/quadrant-axes-model"
-//import { QUADRANT_BOOK_CARDS } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
 import { BOOK_DRAG_ACTIVITIES } from "@/sections/recog/book-drag-activities"
 import {
   demoPrimaryCtaNarrowClassName,

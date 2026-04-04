@@ -10,7 +10,6 @@ import {
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
-import { QuadrantAxesModel } from "@/components/quadrant-axes-model"
 
 export type ReflectionPageProps = {
   onContinue?: () => void

@@ -20,7 +20,6 @@ import {
   MimicryPage,
   AxisPage,
   AssessmentPage,
-  AxesAssessmentPage,
   ReflectionPage,
   type DemoMatchOutcomes,
 } from "@/sections"
@@ -92,12 +91,8 @@ export default function Home() {
     setPhase("demoOutline")
   }, [])
 
-  const goToAxisTogetherIntro = useCallback(() => {
+  const goToAssessment = useCallback(() => {
     setPhase("axisTogether")
-  }, [])
-
-  const goToAxesAssessment = useCallback(() => {
-    setPhase("axesAssessment")
   }, [])
 
   const goToReflection = useCallback(() => {
@@ -126,11 +121,11 @@ export default function Home() {
   } else if (phase === "postRecognition") {
     main = <PostRecognitionPage onContinue={goToBook} />
   } else if (phase === "book") {
-    main = <AxisPage onContinue={goToAxisTogetherIntro} />
+    main = <AxisPage onContinue={goToAssessment} />
   } else if (phase === "axisTogether") {
-    main = <AssessmentPage onContinue={goToAxesAssessment} />
+    main = <AssessmentPage onContinue={goToReflection} />
   } else if (phase === "axesAssessment") {
-    main = <AxesAssessmentPage onContinue={goToReflection} />
+    main = <AssessmentPage onContinue={goToReflection} />
   } else if (phase === "reflection") {
     main = <ReflectionPage onContinue={finishReflection} />
   } else {

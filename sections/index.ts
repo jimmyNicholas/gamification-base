@@ -33,7 +33,7 @@ export { PostRecognitionPage, type PostRecognitionPageProps } from "@/sections/r
 
 export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"
 
-export { AxisPage, type AxisPageProps, type AxisPageStep } from "@/sections/reflection/axis-page"
+export { AxisPage, type AxisPageProps, type AxisPageStep } from "@/sections/analysis/axis-page"
 
 export {
   AssessmentPage,
@@ -41,9 +41,8 @@ export {
   type AssessmentPageStep,
 } from "@/sections/assessment/assessment-page"
 
-export { AxesAssessmentPage, type AxesAssessmentPageProps } from "@/sections/demo/quadrants-axes/axes-assessment-page"
 
-export { ReflectionPage, type ReflectionPageProps } from "@/sections/demo/quadrants-axes/reflection-page"
+export { ReflectionPage, type ReflectionPageProps } from "@/sections/reflection/reflection-page"
 
 export {
   initialDemoMatchOutcomes,
