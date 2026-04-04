@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react"
 
 import type { MatchRevealCard } from "@/components/quadrant-axes-model"
-import { QuadrantAxesModel } from "@/components/quadrant-axes-model"
+import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
 import { QUADRANT_MATCH_REVEAL_CARDS } from "@/sections/demo/match-the-four/quadrant-match-reveal-cards"
 import { buildLeftCard } from "@/sections/demo/match-the-four/match-the-four-activity"
 import type { DemoMatchOutcomes } from "@/sections/demo/match-the-four/demo-match-outcomes"
@@ -20,13 +20,11 @@ import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 import { cn } from "@/lib/utils"
 import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLayout"
 
-const ALL_QUADRANTS_REVEALED: ReadonlySet<QuadrantId> = new Set(["Q1", "Q2", "Q3", "Q4"])
-
 /** Same iteration order as `quadrantsInOrder` in `QuadrantAxesModel` (grid placement). */
 const MATCH_REVEAL_CELL_ORDER: readonly QuadrantId[] = ["Q1", "Q3", "Q2", "Q4"]
 
 function personalizedMatchRevealCards(outcomes: DemoMatchOutcomes): Record<QuadrantId, MatchRevealCard> {
-  const d = "quadrant" as const
+  const d = "compact" as const
   return {
     Q1: { fullTile: buildLeftCard(outcomes, "competition", d).content },
     Q2: { fullTile: buildLeftCard(outcomes, "roleplay", d).content },
@@ -62,6 +60,16 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
   /** After all tiles match: first left column is copy + video; Continue swaps to mini-reflection only. */
   const [afterMatchLeft, setAfterMatchLeft] = useState<"copyAndVideo" | "reflection">("copyAndVideo")
   const outcomeCards = useMemo(() => personalizedMatchRevealCards(outcomes), [outcomes])
+
+  /** Per-cell content matches `contentSource` so each tile pairs with the correct right category (same as V1 `matchRevealContentSource`). */
+  const leftMatchRevealCards = useMemo((): Record<QuadrantId, MatchRevealCard> => {
+    return {
+      Q1: outcomeCards[contentSource.Q1]!,
+      Q2: outcomeCards[contentSource.Q2]!,
+      Q3: outcomeCards[contentSource.Q3]!,
+      Q4: outcomeCards[contentSource.Q4]!,
+    }
+  }, [contentSource, outcomeCards])
 
   const categoryCards: Record<QuadrantId, MatchRevealCard> = useMemo(
     () => ({
@@ -102,19 +110,20 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
         leftContent={
           <div className="flex w-full min-w-0 justify-center">
             {!allMatched ? (
-              <div className="relative mx-auto aspect-square w-full max-w-[620px]">
-                <QuadrantAxesModel
-                  className="h-full w-full max-w-none"
+              <div 
+              // className="relative mx-auto aspect-square w-full max-w-[620px]"
+              >
+                <QuadrantAxesModelV2
+                  //className="h-full w-full max-w-[620px]"
                   mode="matchReveal"
-                  revealedQuadrants={ALL_QUADRANTS_REVEALED}
-                  matchRevealCards={outcomeCards}
-                  matchRevealContentSource={contentSource}
-                  matchRevealTilePalette="plainWhite"
-                  matchRevealLeftMatchedHidden={matchedLeftCells}
-                  matchRevealSelection={{
-                    selected: selectedOutcomeCell,
-                    onSelect: (cell) => setSelectedOutcomeCell((prev) => (prev === cell ? null : cell)),
+                  cards={leftMatchRevealCards}
+                  cardState={{
+                    Q1: matchedLeftCells.has("Q1") ? "invisible" : "black-white",
+                    Q2: matchedLeftCells.has("Q2") ? "invisible" : "black-white",
+                    Q3: matchedLeftCells.has("Q3") ? "invisible" : "black-white",
+                    Q4: matchedLeftCells.has("Q4") ? "invisible" : "black-white",
                   }}
+                  onCardClick={(q) => setSelectedOutcomeCell((prev) => prev === q ? null : q)}
                 />
               </div>
             ) : afterMatchLeft === "copyAndVideo" ? (
@@ -192,16 +201,27 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
         }
         rightContent={
           <div className="flex w-full min-w-0 justify-center">
-            <QuadrantAxesModel
-              className="h-full w-full max-w-[620px]"
+            <QuadrantAxesModelV2
+              // className="h-full w-full max-w-[620px]"
               mode="matchReveal"
-              revealedQuadrants={ALL_QUADRANTS_REVEALED}
-              matchRevealCards={categoryCards}
-              matchRevealTilePalette="neutralGrey"
-              matchRevealCategoryBorders={selectedOutcomeCell != null}
-              matchRevealRightMatched={matchedRightCells}
-              onMatchRevealRightClick={handleMatchRevealRightClick}
-            />
+              horizontalAxis={{
+                state: "invisible",
+                clickable: false,
+              }}
+              verticalAxis={{
+                state: "invisible",
+                clickable: false,
+              }}
+              cards={categoryCards}
+                cardState={{
+                  Q1: matchedRightCells.has("Q1") ? "activeColor" : selectedOutcomeCell != null ? "grey" : "transparent",
+                  Q2: matchedRightCells.has("Q2") ? "activeColor" : selectedOutcomeCell != null ? "grey" : "transparent",
+                  Q3: matchedRightCells.has("Q3") ? "activeColor" : selectedOutcomeCell != null ? "grey" : "transparent",
+                  Q4: matchedRightCells.has("Q4") ? "activeColor" : selectedOutcomeCell != null ? "grey" : "transparent",
+                }}
+                onCardClick={handleMatchRevealRightClick}
+              />
+             
           </div>
         }
       />

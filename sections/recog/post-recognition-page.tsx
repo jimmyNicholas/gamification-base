@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { QuadrantAxesModel } from "@/components/quadrant-axes-model"
-import { QUADRANT_BOOK_CARDS } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
+//import { QUADRANT_BOOK_CARDS } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
 import { BOOK_DRAG_ACTIVITIES } from "@/sections/recog/book-drag-activities"
 import {
   demoPrimaryCtaNarrowClassName,
@@ -14,8 +14,17 @@ import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 import { RecogLayout } from "@/sections/recog/recog-layout"
 import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLayout"
 import { cn } from "@/lib/utils"
+import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
+import { useMemo } from "react"
 
 const ALL_QUADRANTS: QuadrantId[] = ["Q1", "Q2", "Q3", "Q4"]
+
+const FLIP_CARDS: Partial<Record<QuadrantId, { icon: string; label: string; back: React.ReactNode }>> = {
+  Q1: { icon: "🏆", label: "Competition", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Competition 🏆</h3><p>Games where one player or team wins by outperforming the others.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>races, quizzes, spelling bees, timed drills, leaderboards, debates, trivia.</p></div></div> },
+  Q2: { icon: "🎭", label: "Roleplay", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Roleplay 🎭</h3><p>Games where students become someone else.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>skits, gestures, email response writing, situational acting</p></div></div> },
+  Q3: { icon: "🎲", label: "Chance", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Chance 🎲</h3><p>Games where the outcome depends on luck rather than skill.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>dice, cards, spinning wheels, coins, envelopes, raffles</p></div></div> },
+  Q4: { icon: "💥", label: "Chaos", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Chaos 💥</h3><p>Games where the outcome is unpredictable and random.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>charades, free association, word association, random number generators, random word generators, random sentence generators, random paragraph generators, random story generators, random poem generators, random song generators, random dance generators, random art generators, random craft generators, random science generators, random math generators, random history generators, random geography generators, random science generators, random math generators, random history generators, random geography generators</p></div></div> },
+}
 
 export type PostRecognitionPageProps = {
   onContinue?: () => void
@@ -23,13 +32,14 @@ export type PostRecognitionPageProps = {
 
 /** Yellow recognition surface — placeholder copy left, quadrants book model right. After mini-reflection, before Quadrants Book. */
 export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
-  const [bookFlipped, setBookFlipped] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
+  const [cards, setCards] = React.useState<Partial<Record<QuadrantId, { icon: string; label: string; back: React.ReactNode }>>>(FLIP_CARDS)
+  const [cardFlipped, setCardFlipped] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
   const [everSeenBack, setEverSeenBack] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
   const [placedActivityById, setPlacedActivityById] = React.useState<Partial<Record<string, QuadrantId>>>({})
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null)
 
   const onBookFlipToggle = React.useCallback((q: QuadrantId) => {
-    setBookFlipped((prev) => {
+    setCardFlipped((prev) => {
       const willShowBack = !prev[q]
       if (willShowBack) {
         setEverSeenBack((e) => ({ ...e, [q]: true }))
@@ -47,11 +57,32 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
     setPlacedActivityById((prev) => {
       if (prev[activityId] || act.quadrant !== q) return prev
       // Flip to front in the same update as a successful place (don’t rely on a flag read after `setPlacedActivityById`).
-      setBookFlipped((bf) => ({ ...bf, [q]: false }))
+      setCardFlipped((cf) => ({ ...cf, [q]: false }))
       return { ...prev, [activityId]: q }
     })
     setSelectedActivityId((sel) => (sel === activityId && act.quadrant === q ? null : sel))
   }, [])
+
+  const cardFrontExtra = useMemo(() => {
+    const result: Partial<Record<QuadrantId, React.ReactNode>> = {}
+    for (const [activityId, q] of Object.entries(placedActivityById)) {
+      const act = BOOK_DRAG_ACTIVITIES.find((a) => a.id === activityId)
+      if (!act || !q) continue
+      const existing = result[q as QuadrantId]
+      result[q as QuadrantId] = (
+        <div className="flex flex-wrap gap-1 justify-center">
+          {existing}
+          <span className={cn(
+            "rounded-full border px-2 py-0.5 text-[0.65rem] font-medium",
+            //QUADRANT_PILL_COLOR[q as QuadrantId]
+          )}>
+            {act.label}
+          </span>
+        </div>
+      )
+    }
+    return result
+  }, [placedActivityById])
 
   const bookFrontExtra = React.useMemo(() => {
     const byQuadrant: Record<QuadrantId, string[]> = { Q1: [], Q2: [], Q3: [], Q4: [] }
@@ -153,7 +184,16 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
         }
         rightContent={
           <div className="flex w-full min-w-0 justify-center">
-            <QuadrantAxesModel
+            <QuadrantAxesModelV2
+              mode="flipCard"
+              cards={cards}
+              cardFlipped={Object.fromEntries(Object.entries(cardFlipped).map(([q, flipped]) => [q, flipped ?? false])) as Partial<Record<QuadrantId, boolean>>}
+              onCardFlip={onBookFlipToggle}
+              cardFrontExtra={cardFrontExtra}
+              onActivityDrop={allCardsSeenBackOnce ? handleBookTileActivityDrop : undefined}
+              selectedActivityId={allCardsSeenBackOnce ? selectedActivityId : null}
+              />
+            {/* <QuadrantAxesModel
               className="h-full w-full max-w-[620px]"
               mode="book"
               bookCards={QUADRANT_BOOK_CARDS}
@@ -163,7 +203,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
               bookFrontExtra={bookFrontExtra}
               onBookTileActivityDrop={allCardsSeenBackOnce ? handleBookTileActivityDrop : undefined}
               bookSelectedActivityId={allCardsSeenBackOnce ? selectedActivityId : null}
-            />
+            /> */}
           </div>
         }
       />
