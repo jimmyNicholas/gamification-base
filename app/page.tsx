@@ -24,6 +24,8 @@ import {
   initialDemoMatchOutcomes,
   IntroPage,
   RecognitionPage,
+  RecognitionCategoriesPage,
+  RecognitionReflectionPage,
   PostRecognitionPage,
   MimicryPage,
   AxisPage,
@@ -112,6 +114,14 @@ export default function Home() {
     setPhase("recognition")
   }, [])
 
+  const goToRecognitionCategories = useCallback(() => {
+    setPhase("recognitionCategories")
+  }, [])
+
+  const goToRecognitionMiniReflection = useCallback(() => {
+    setPhase("recognitionMiniReflection")
+  }, [])
+
   const goToPostRecognition = useCallback(() => {
     setPhase("postRecognition")
   }, [])
@@ -180,7 +190,24 @@ export default function Home() {
       main = <ChaosPage onContinue={goToRecognitionFromChaos} />
       break
     case "recognition":
-      main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToPostRecognition} onMatchMistake={handleRecognitionMistake} onReflectionUsed={handleRecognitionReflectionUsed} />
+      main = (
+        <RecognitionPage
+          outcomes={matchOutcomes}
+          onComplete={goToRecognitionCategories}
+          onMatchMistake={handleRecognitionMistake}
+        />
+      )
+      break
+    case "recognitionCategories":
+      main = <RecognitionCategoriesPage onContinue={goToRecognitionMiniReflection} />
+      break
+    case "recognitionMiniReflection":
+      main = (
+        <RecognitionReflectionPage
+          onContinue={goToPostRecognition}
+          onReflectionUsed={handleRecognitionReflectionUsed}
+        />
+      )
       break
     case "postRecognition":
       main = <PostRecognitionPage onContinue={goToBook} />

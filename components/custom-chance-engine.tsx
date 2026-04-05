@@ -302,7 +302,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
       </div>
 
       {phase === "picking" ? (
-        <div className="flex flex-col items-center justify-center gap-10 pb-2 lg:flex-row lg:items-stretch lg:justify-center lg:gap-16">
+        <div className="flex flex-col items-center justify-center gap-10 pb-2 sm:flex-row lg:items-stretch lg:justify-center lg:gap-16">
           {/* 4×4 row-major — matches deck[] order; no rotation / transform */}
           <div className="flex min-h-[20rem] min-w-0 shrink-0 flex-col items-center justify-center gap-3 self-stretch sm:min-h-[22rem] lg:min-h-0">
             <p id={poolInstructionsId} className="text-sm text-black/70 text-center mt-2">

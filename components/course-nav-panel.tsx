@@ -13,11 +13,22 @@ export type CoursePhase =
   | "mimicry"
   | "chaos"
   | "recognition"
+  | "recognitionCategories"
+  | "recognitionMiniReflection"
   | "postRecognition"
   | "book"
   | "axisTogether"
   | "axesAssessment"
   | "reflection"
+
+/** Phases that belong to the Recognition side-rail section (single icon). */
+export function isRecognitionSectionPhase(phase: CoursePhase): boolean {
+  return (
+    phase === "recognition" ||
+    phase === "recognitionCategories" ||
+    phase === "recognitionMiniReflection"
+  )
+}
 
 type NavItemId = CoursePhase | "admin"
 
@@ -81,12 +92,18 @@ export function CourseNavPanel({ phase, onNavigate, adminPanelOpen, onToggleAdmi
         >
           {NAV_ITEMS.map(({ phase: id, label, Icon }) => {
             const isAdmin = id === "admin"
-            const active = isAdmin ? adminPanelOpen : phase === id
+            const active = isAdmin
+              ? adminPanelOpen
+              : id === "recognition"
+                ? isRecognitionSectionPhase(phase)
+                : phase === id
             return (
               <button
                 key={id}
                 type="button"
-                onClick={() => isAdmin ? onToggleAdminPanel() : onNavigate(id)}
+                onClick={() =>
+                  isAdmin ? onToggleAdminPanel() : id === "recognition" ? onNavigate("recognition") : onNavigate(id)
+                }
                 title={label}
                 aria-label={label}
                 aria-current={active ? "page" : undefined}

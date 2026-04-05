@@ -105,7 +105,11 @@ export function CustomTimedMatch({
   const [hasEverCompleted, setHasEverCompleted] = useState(false)
 
   useEffect(() => {
-    if (gameComplete) setHasEverCompleted(true)
+    if (gameComplete) {
+      setTimeout(() => {
+        setHasEverCompleted(true)
+      }, 0)
+    }
   }, [gameComplete])
 
   useEffect(() => {
@@ -113,7 +117,9 @@ export function CustomTimedMatch({
     if (timerStartRef.current !== null) return
     if (!selectedLeftId && !selectedRightId) return
     timerStartRef.current = performance.now()
-    setTimerRunning(true)
+    setTimeout(() => {
+      setTimerRunning(true)
+    }, 0)
   }, [selectedLeftId, selectedRightId, gameComplete])
 
   useEffect(() => {
@@ -133,11 +139,19 @@ export function CustomTimedMatch({
     if (matchedMatchIds.size < totalPairs) return
     const start = timerStartRef.current
     const ms = start != null ? performance.now() - start : 0
-    setFinalTimeMs(ms)
+    setTimeout(() => {
+      setFinalTimeMs(ms)
+    }, 0)
     lastCompletedTimeMsRef.current = ms
-    setGameComplete(true)
-    setTimerRunning(false)
-    setElapsedMs(ms)
+    setTimeout(() => {
+      setGameComplete(true)
+    }, 0)
+    setTimeout(() => {
+      setTimerRunning(false)
+    }, 0)
+    setTimeout(() => {
+      setElapsedMs(ms)
+    }, 0)
   }, [matchedMatchIds, totalPairs, gameComplete])
 
   useEffect(() => {
@@ -146,25 +160,39 @@ export function CustomTimedMatch({
     const left = leftItems.find((l) => l.id === selectedLeftId)
     const right = rightItems.find((r) => r.id === selectedRightId)
     if (!left || !right) {
-      setSelectedLeftId(null)
-      setSelectedRightId(null)
+      setTimeout(() => {
+        setSelectedLeftId(null)
+      }, 0)
+      setTimeout(() => {
+        setSelectedRightId(null)
+      }, 0)
       return
     }
 
     if (left.matchId === right.matchId) {
-      setMatchedMatchIds((prev) => {
+      setTimeout(() => {
+        setMatchedMatchIds((prev) => {
         const next = new Set(prev)
         next.add(left.matchId)
         return next
       })
-      setSelectedLeftId(null)
-      setSelectedRightId(null)
+      }, 0)
+      setTimeout(() => {
+        setSelectedLeftId(null)
+      }, 0)
+      setTimeout(() => {
+        setSelectedRightId(null)
+      }, 0)
       return
     }
 
     const t = window.setTimeout(() => {
-      setSelectedLeftId(null)
-      setSelectedRightId(null)
+      setTimeout(() => {
+        setSelectedLeftId(null)
+      }, 0)
+      setTimeout(() => {
+        setSelectedRightId(null)
+      }, 0)
     }, 350)
     return () => window.clearTimeout(t)
   }, [selectedLeftId, selectedRightId, leftItems, rightItems])
@@ -256,7 +284,7 @@ export function CustomTimedMatch({
 
       {!gameComplete ? (
         <>
-          <div className="mx-auto mt-8 flex w-full max-w-4xl flex-col items-stretch gap-10 lg:mt-10 lg:flex-row lg:items-stretch lg:justify-center lg:gap-10 xl:gap-14">
+          <div className="mx-auto mt-8 flex w-full max-w-4xl flex-col items-stretch gap-10 sm:max-w-sm md:max-w-sm lg:max-w-4xl xl:max-w-4xl lg:mt-10 lg:flex-row lg:items-stretch lg:justify-center lg:gap-10 xl:gap-14">
             <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-3 sm:gap-4">
               {shuffledLeft.map((item, slot) => {
                 const matched = matchedMatchIds.has(item.matchId)

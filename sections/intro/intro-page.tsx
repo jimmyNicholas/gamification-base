@@ -60,7 +60,7 @@ export function IntroPage({
   const listHeading = outline.listHeading ?? "Here's what you'll do:"
 
   return (
-    <main className={cn("relative min-h-screen overflow-hidden", className)}>
+    <main className={cn("relative h-dvh overflow-hidden", className)}>
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url("${backgroundImageUrl}")` }}
@@ -68,7 +68,7 @@ export function IntroPage({
       />
       <div className="absolute inset-0 bg-black/35" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-intro px-5 py-12 sm:px-10 sm:py-16">
+      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-intro px-5 py-12 sm:px-10 sm:py-16">
         <div className="flex w-full flex-col items-center justify-center gap-10 lg:gap-12">
           <div className="grid w-full gap-12 lg:grid-cols-[1fr_400px] lg:items-center lg:gap-16 xl:grid-cols-[1fr_440px]">
             <header className="text-white lg:max-w-xl">

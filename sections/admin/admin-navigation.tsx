@@ -32,26 +32,21 @@ const NAV_SECTIONS: NavSection[] = [
     title: "Recognition",
     phases: [
       { phase: "recognition", label: "Match the Four" },
-      { phase: "postRecognition", label: "Video and Context" },
-      // Note: "Mini Reflection" and "Flipcards and Activity Match" would be sub-pages
+      { phase: "recognitionCategories", label: "Four categories" },
+      { phase: "recognitionMiniReflection", label: "Mini reflection" },
     ],
   },
   {
     title: "Analysis",
     phases: [
       { phase: "book", label: "Intro" },
-      // Note: Additional phases would include:
-      // - Agency and Fate Intro
-      // - Agency and Fate Situations
-      // - Self-Intact and Self-Dissolved Intro
-      // - Self-Intact and Self-Dissolved Situations
     ],
   },
   {
     title: "Assessment",
     phases: [
-      { phase: "axisTogether", label: "Intro" },
-      { phase: "axesAssessment", label: "Situations 1-4" },
+      { phase: "axisTogether", label: "Analysis" },
+      //{ phase: "axesAssessment", label: "Situations 1-4" },
       // Note: Assessment feedback phase to be added
     ],
   },

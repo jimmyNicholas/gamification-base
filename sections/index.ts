@@ -29,6 +29,16 @@ export { ChaosPage, type ChaosPageProps } from "@/sections/demo/chaos/chaos-page
 
 export { RecognitionPage, type RecognitionPageProps } from "@/sections/recog/recognition-page"
 
+export {
+  RecognitionCategoriesPage,
+  type RecognitionCategoriesPageProps,
+} from "@/sections/recog/recognition-categories-page"
+
+export {
+  RecognitionReflectionPage,
+  type RecognitionReflectionPageProps,
+} from "@/sections/recog/recognition-reflection-page"
+
 export { PostRecognitionPage, type PostRecognitionPageProps } from "@/sections/recog/post-recognition-page"
 
 export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"

@@ -237,6 +237,8 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
           <div
             className={cn(
               "relative z-10 w-full shrink-0 border-t border-black/10 bg-white p-4 sm:p-5",
+              isCafeScene &&
+                "lg:absolute lg:left-1/2 lg:top-[40%] lg:z-20 lg:w-[min(38%,28rem)] lg:-translate-x-1/2 lg:-translate-y-1/2 lg:border-t-0 lg:bg-transparent lg:p-3 lg:shadow-none xl:w-[min(36%,30rem)]",
               !isCafeScene &&
                 "lg:absolute lg:inset-x-auto lg:bottom-auto lg:left-auto lg:top-1/2 lg:-translate-y-1/2 lg:border-t-0 lg:bg-transparent lg:p-0 lg:right-[max(1rem,4.5%)]",
               !isCafeScene &&
@@ -244,9 +246,7 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                 "lg:w-[min(42%,400px)] lg:max-w-none xl:w-[min(40%,480px)] 2xl:w-[min(38%,520px)]",
               !isCafeScene &&
                 isHatAffirmation &&
-                "lg:w-auto lg:max-w-[min(42%,400px)] xl:max-w-[min(40%,480px)] 2xl:max-w-[min(38%,520px)]",
-              isCafeScene &&
-                "lg:absolute lg:inset-x-4 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2 lg:border-t-0 lg:bg-transparent lg:p-0 xl:inset-x-8"
+                "lg:w-auto lg:max-w-[min(42%,400px)] xl:max-w-[min(40%,480px)] 2xl:max-w-[min(38%,520px)]"
             )}
           >
             <div
@@ -265,7 +265,8 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                   isHatAffirmation && "md:w-fit",
                   "max-md:p-0",
                   "md:rounded-xl md:border md:border-black/10 md:bg-white md:p-6 md:shadow-[0_6px_20px_rgba(0,0,0,0.12)]",
-                  isCafeScene && "md:mx-auto md:max-w-[min(76.8%,44.8rem)]"
+                  isCafeScene &&
+                    "lg:overflow-y-auto lg:p-4 lg:pb-5 xl:p-6 lg:max-h-[min(82vh,42rem)]"
                 )}
                 role="region"
                 aria-label="Mimicry dialogue"
@@ -308,7 +309,9 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           className={cn(
                             "text-left text-base leading-snug text-black sm:text-lg sm:leading-snug md:text-xl md:leading-snug",
                             currentLine.kind === "thought" && "text-black/90",
-                            isCafeScene && "whitespace-pre-line"
+                            isCafeScene && "whitespace-pre-line",
+                            isCafeScene &&
+                              "lg:text-[0.9375rem] lg:leading-snug xl:text-base xl:leading-snug"
                           )}
                         >
                           {currentLine.text}
@@ -368,9 +371,22 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                     )}
 
                     {atFreeform && scene.freeform && (
-                      <div className="flex flex-col gap-3">
+                      <div
+                        className={cn(
+                          "flex flex-col gap-3",
+                          isCafeScene && "lg:gap-2"
+                        )}
+                      >
                         {scene.prompt && (
-                          <p className={cn(demoMimicryScenePromptClassName, "text-left")}>{scene.prompt}</p>
+                          <p
+                            className={cn(
+                              demoMimicryScenePromptClassName,
+                              "text-left",
+                              isCafeScene && "lg:text-lg lg:leading-snug xl:text-xl xl:leading-snug"
+                            )}
+                          >
+                            {scene.prompt}
+                          </p>
                         )}
                         <label className="sr-only" htmlFor="mimicry-freeform">
                           {scene.freeform.placeholder}
@@ -381,9 +397,20 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           placeholder={scene.freeform.placeholder}
                           value={freeformText}
                           onChange={(e) => setFreeformText(e.target.value)}
-                          className="min-h-[120px] w-full resize-y rounded-xl border border-black/20 bg-white px-3 py-2.5 text-base leading-snug text-black shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] outline-none placeholder:text-black/55 focus-visible:border-black/40 focus-visible:ring-2 focus-visible:ring-black/15"
+                          className={cn(
+                            "min-h-[72px] w-full resize-y rounded-xl border border-black/20 bg-white px-2.5 py-2 text-sm leading-snug text-black shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] outline-none placeholder:text-black/55 focus-visible:border-black/40 focus-visible:ring-2 focus-visible:ring-black/15 sm:min-h-[96px] sm:px-3 sm:py-2.5 sm:text-base md:min-h-[120px]",
+                            isCafeScene &&
+                              "lg:min-h-[64px] lg:max-h-[112px] lg:py-2 lg:text-sm xl:min-h-[72px] xl:max-h-[120px]"
+                          )}
                         />
-                        <p className={demoUiHelperTextClassName}>{scene.freeform.footnote}</p>
+                        <p
+                          className={cn(
+                            demoUiHelperTextClassName,
+                            isCafeScene && "lg:leading-tight"
+                          )}
+                        >
+                          {scene.freeform.footnote}
+                        </p>
                         <Button
                           type="button"
                           size="lg"

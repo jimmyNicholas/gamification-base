@@ -75,7 +75,8 @@ export const demoStageMimicryFrameClassName = cn(
   demoStageShellCoreClassName,
   "flex flex-col",
   demoStageBorderMimicryClassName,
-  "md:aspect-3600/1800"
+  /** Lock 2:1 only at `lg` when the art is absolutely positioned; avoids clipping stacked dialogue at `md`. */
+  "lg:aspect-3600/1800"
 )
 
 /** Mint primary CTA — full width of parent, `px-8`. */

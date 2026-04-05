@@ -263,7 +263,7 @@ export function QuadrantAxesModelV2({
 
   return (
     <div
-      className={cn("relative w-full max-w-88", className)}
+      className={cn("relative w-full max-w-[620px] p-8", className)}
       style={{ aspectRatio: "1 / 1" }}
       aria-label="Quadrants and axes model"
     >

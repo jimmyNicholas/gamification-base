@@ -55,7 +55,9 @@ export function TwoColumnActivityStageLayout({
   rightFrameClassName,
 }: TwoColumnActivityStageLayoutProps) {
   const shouldRenderTitleWrapper = reserveTopTitleSpace === false ? topTitle != null : true
-  const shouldApplyLeftPaddingAndStretch = reserveTopTitleSpace === false && leftVerticalAlign === "start"
+  /** Full column height so left columns using `flex` + `mt-auto` (e.g. CTAs) can sit on the bottom. */
+  const leftColumnFillHeight = leftVerticalAlign === "start"
+  const leftColumnEdgePadding = reserveTopTitleSpace === false && leftVerticalAlign === "start"
 
   return (
     <section className={cn("w-full", className)}>
@@ -74,7 +76,7 @@ export function TwoColumnActivityStageLayout({
       {/* Content Area */}
       <div
         className={cn(
-          "grid w-full gap-8 md:grid-cols-2",
+          "grid w-full gap-2 md:gap-8 md:grid-cols-2",
           // Keep things comfortably readable on large screens; outer shells own max-width of the page.
           "items-stretch",
           contentClassName
@@ -84,11 +86,16 @@ export function TwoColumnActivityStageLayout({
         <div
           className={cn(
             "flex w-full justify-center",
-            leftVerticalAlign === "center" ? "items-center" : "items-start"
+            leftVerticalAlign === "center" ? "items-center" : "items-stretch"
           )}
         >
-          {/* Only apply stretch + extra top/bottom padding when left-aligned. */}
-          <div className={cn("w-full", shouldApplyLeftPaddingAndStretch && "h-full pt-5 pb-5")}>
+          <div
+            className={cn(
+              "w-full",
+              leftColumnFillHeight && "h-full min-h-0",
+              leftColumnEdgePadding && "pt-5 pb-5"
+            )}
+          >
             {leftContent}
           </div>
         </div>
@@ -99,7 +106,7 @@ export function TwoColumnActivityStageLayout({
             className={cn(
               // Shared "model book" frame — softly elevated card with subtle border and tint.
               "relative w-full rounded-3xl",
-              "p-6 md:p-8 lg:p-10",
+              "p-0 md:p-8 lg:p-10",
               rightFrameClassName
             )}
           >
