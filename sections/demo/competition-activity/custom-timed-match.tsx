@@ -242,7 +242,7 @@ export function CustomTimedMatch({
       style={flatSurface ? undefined : { backgroundColor: DEMO_OUTLINE_BG }}
     >
       {!gameComplete ? (
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-2 text-center">
+        <div className="mx-auto flex w-full max-w-4xl flex-row justify-between items-center gap-2 text-center">
           <h2 className={demoActivityHeadingClassName}>{title}</h2>
           <p className="rounded-2xl border border-black bg-white px-5 py-2.5 text-lg font-medium tabular-nums sm:text-xl">
             Timer: {timerText}
@@ -252,7 +252,7 @@ export function CustomTimedMatch({
 
       {!gameComplete ? (
         <>
-          <div className="mx-auto mt-8 flex w-full flex-col items-stretch gap-10 lg:mt-10 lg:flex-row lg:items-stretch lg:justify-center lg:gap-10 xl:gap-14">
+          <div className="mx-auto mt-8 flex w-full max-w-4xl flex-col items-stretch gap-10 lg:mt-10 lg:flex-row lg:items-stretch lg:justify-center lg:gap-10 xl:gap-14">
             <div className="grid min-w-0 w-full flex-1 grid-cols-2 gap-3 sm:gap-4">
               {shuffledLeft.map((item, slot) => {
                 const matched = matchedMatchIds.has(item.matchId)
@@ -317,11 +317,13 @@ export function CustomTimedMatch({
         <div className="mx-auto mt-4 flex w-full max-w-4xl flex-col items-stretch gap-6 px-3 sm:mt-6 sm:gap-8 sm:px-4">
           <div className="flex w-full flex-col items-center justify-center gap-4 text-center sm:flex-row sm:flex-wrap sm:gap-5">
             <h2 className={demoActivityHeadingClassName}>
-              Your time: {formatMmSs(finalTimeMs)}. Can you beat it?
+              Your time is {formatMmSs(finalTimeMs)}. Can you beat it?
             </h2>
-            <Button type="button" variant="outline" size="lg" onClick={playAgain} className="shrink-0">
+            <div className="shrink-0 max-w-[200px]">
+            <button type="button" onClick={playAgain} className={cn(demoPrimaryCtaConstrainedClassName, "shrink-0")}>
               Play again
-            </Button>
+            </button>
+            </div>
           </div>
 
           <div className="flex w-full min-w-0 flex-col items-stretch gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-8">

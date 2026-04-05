@@ -65,9 +65,9 @@ export const demoStageChaosQ1ClassName = cn(
 /** Chaos Q2 skills arena. */
 export const demoStageChaosQ2ClassName = cn(
   demoStageShellCoreClassName,
-  "mx-auto h-[min(60vh,780px)]",
+  "mx-auto h-[calc(100vh-10rem)]",
   demoStageBorderFaintClassName,
-  demoStageGradientFillClassName
+  "bg-[#EEF8F3]"
 )
 
 /** Mimicry scene frame (no horizontal centering — parent is `items-center`). */

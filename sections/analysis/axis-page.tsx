@@ -151,7 +151,7 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
             mode="axisDiagnostic"
             horizontalAxis={{ state: "black", clickable: false }}
             verticalAxis={{ state: "black", clickable: false }}
-            className="h-full w-full max-w-[620px] p-14"
+            className="h-full w-full"
           />
         )
       case "agencyIntro":
@@ -160,7 +160,7 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
             mode="axisDiagnostic"
             horizontalAxis={{ state: "color", clickable: false }}
             verticalAxis={{ state: "grey", clickable: false }}
-            className="h-full w-full max-w-[620px] p-14"
+            className="h-full w-full"
           />
         )
       case "agencyQ1":
@@ -178,7 +178,7 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
               if (axis !== "horizontal") return
               onHChange(index as AxisIndex)
             }}
-            className="h-full w-full max-w-[620px] p-14"
+            className="h-full w-full"
           />
         )
       case "selfIntro":
@@ -187,7 +187,7 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
             mode="axisDiagnostic"
             horizontalAxis={{ state: "grey", clickable: false }}
             verticalAxis={{ state: "color", clickable: false }}
-            className="h-full w-full max-w-[620px] p-14"
+            className="h-full w-full"
           />
         )
       case "selfQ1":
@@ -205,7 +205,7 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
               if (axis !== "vertical") return
               onVChange(index as AxisIndex)
             }}
-            className="h-full w-full max-w-[620px] p-14"
+            className="h-full w-full"
           />
         )
       default:

@@ -289,8 +289,8 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
       {phase === "picking" ? (
         <div className="flex flex-col items-center justify-center gap-10 pb-2 lg:flex-row lg:items-stretch lg:justify-center lg:gap-16">
           {/* 4×4 row-major — matches deck[] order; no rotation / transform */}
-          <div className="flex min-h-[20rem] min-w-0 shrink-0 flex-col items-center justify-center self-stretch sm:min-h-[22rem] lg:min-h-0">
-            <p id={poolInstructionsId} className="sr-only">
+          <div className="flex min-h-[20rem] min-w-0 shrink-0 flex-col items-center justify-center gap-3 self-stretch sm:min-h-[22rem] lg:min-h-0">
+            <p id={poolInstructionsId} className="text-sm text-black/70 text-center mt-2">
               Use arrow keys or W A S D to move. Press Enter or Space to select a card.
             </p>
             <div
@@ -402,10 +402,10 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
                 return (
                   <li
                     key={idx}
-                    className="flex h-full min-h-[6.5rem] items-center justify-center rounded-xl border-2 border-black/80 px-1.5 py-2 text-center shadow-md sm:min-h-[7.25rem] lg:min-h-0"
+                    className="flex h-full min-h-[6.5rem] items-center justify-center rounded-xl border-2 border-black/80 px-3 py-3 text-center shadow-md sm:min-h-[7.25rem] lg:min-h-0"
                     style={{ backgroundColor: getQuadrantColor(qn) }}
                   >
-                    <span className="text-balance text-lg font-semibold leading-snug text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] sm:text-2xl md:text-3xl">
+                    <span className="text-balance text-base font-semibold leading-snug text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] sm:text-lg md:text-xl">
                       <span className="tabular-nums">{letters[idx]}.</span> {text}
                     </span>
                   </li>

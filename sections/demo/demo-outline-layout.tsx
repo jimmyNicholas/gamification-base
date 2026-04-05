@@ -18,11 +18,11 @@ export const DEMO_RECOGNITION_SURFACE = "#fff4d9"
 
 /** Default `<main>` padding / centering — merged with `mainClassName` in `DemoStyleLayout`. */
 export const DEMO_MAIN_BASE_CLASSNAME =
-  "mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-6 py-14 sm:px-10"
+  "mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center layout-padding-default"
 
 /** Wide demo stages (chaos, mimicry, etc.) — merges over default `main` via `tailwind-merge`. */
 export const DEMO_MAIN_WIDE =
-  "max-w-full px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8 lg:max-w-[min(100%,85rem)] xl:max-w-[min(100%,100rem)] xl:px-10 2xl:max-w-[min(100%,120rem)] 2xl:px-12"
+  "max-w-full layout-padding-wide lg:max-w-[min(100%,85rem)] xl:max-w-[min(100%,100rem)] xl:px-10 2xl:max-w-[min(100%,120rem)] 2xl:px-12"
 
 export type DemoStyleLayoutProps = {
   children: React.ReactNode
@@ -44,12 +44,12 @@ export function DemoStyleLayout({ children, className, mainClassName, surfaceCol
       style={{ backgroundColor: bg }}
       {...(dataActivity ? { "data-activity": dataActivity } : {})}
     >
-      <main
+      <div
         className={cn(DEMO_MAIN_BASE_CLASSNAME, mainClassName)}
         style={{ backgroundColor: bg }}
       >
         {children}
-      </main>
+      </div>
     </div>
   )
 }

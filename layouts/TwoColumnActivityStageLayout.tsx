@@ -93,14 +93,13 @@ export function TwoColumnActivityStageLayout({
           </div>
         </div>
 
-        {/* Right Column */}  
-        <div className="flex w-full items-stretch">
+        {/* Right Column */}
+        <div className="flex w-full min-w-0 items-stretch">
           <div
             className={cn(
               // Shared "model book" frame — softly elevated card with subtle border and tint.
               "relative w-full rounded-3xl",
-              "p-4",
-              "sm:p-5 md:p-6",
+              "p-6 md:p-8 lg:p-10",
               rightFrameClassName
             )}
           >

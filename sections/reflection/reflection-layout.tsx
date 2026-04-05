@@ -16,15 +16,16 @@ export type ReflectionLayoutProps = {
   dataActivity?: string
 }
 
+const REFLECTION_SURFACE = "#dbeafe" // TODO: Replace with CSS variable once Tailwind 4 supports it
+
 /**
- * Reflection-phase shell — wide `<main>` like recognition.
- * Owns `<main>` so DevTools show `ReflectionLayout`, not `DemoStyleLayout`.
+ * Reflection-phase shell — wide layout like recognition.
  */
 export function ReflectionLayout({
   children,
   className,
   mainClassName,
-  surfaceColor = "#dbeafe",
+  surfaceColor = REFLECTION_SURFACE,
   dataActivity = "reflection",
 }: ReflectionLayoutProps) {
   return (
@@ -33,12 +34,12 @@ export function ReflectionLayout({
       style={{ backgroundColor: surfaceColor }}
       data-activity={dataActivity}
     >
-      <main
+      <div
         className={cn(DEMO_MAIN_BASE_CLASSNAME, DEMO_MAIN_WIDE, mainClassName)}
         style={{ backgroundColor: surfaceColor }}
       >
         {children}
-      </main>
+      </div>
     </div>
   )
 }

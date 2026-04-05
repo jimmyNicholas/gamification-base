@@ -192,7 +192,7 @@ export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange
           mode="axisDiagnostic"
           horizontalAxis={{ state: "color", clickable: false }}
           verticalAxis={{ state: "color", clickable: false }}
-          className="h-full w-full max-w-[620px] p-14"
+          className="h-full w-full"
         />
       )
     }
@@ -206,7 +206,7 @@ export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange
             if (axis === "horizontal") setHorizontalIndex(index)
             else setVerticalIndex(index)
           }}
-          className="h-full w-full max-w-[620px] p-14"
+          className="h-full w-full"
         />
       )
     }

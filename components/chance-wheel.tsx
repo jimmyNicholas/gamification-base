@@ -81,14 +81,16 @@ function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: 
               [4, 2],
               [3, 3],
             ] as const
-          ).map(([label, colorIdx]) => {
+          ).map(([_label, colorIdx]) => {
             const i = colorIdx
+            const letterLabels = ["A", "B", "C", "D"] as const
+            const letter = letterLabels[i]
             const mid = (180 + i * 90 + 45) * (Math.PI / 180)
             const tx = Math.cos(mid) * 0.55
             const ty = Math.sin(mid) * 0.55
             return (
               <text
-                key={`t-${label}`}
+                key={`t-${letter}`}
                 x={tx}
                 y={ty}
                 textAnchor="middle"
@@ -96,7 +98,7 @@ function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: 
                 className="fill-white font-bold"
                 style={{ fontSize: 0.28 }}
               >
-                {label}
+                {letter}
               </text>
             )
           })

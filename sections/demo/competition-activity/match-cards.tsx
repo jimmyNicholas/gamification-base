@@ -7,7 +7,7 @@ export const matchCardSurfaceClass =
 
 /** Fills the grid cell on wide layouts (competition demo); no fixed max-width cap. */
 export const matchCardFluidSurfaceClass =
-  "flex aspect-square w-full min-w-0 items-center justify-center rounded-2xl border-2 px-3 py-3 transition-colors sm:px-4 sm:py-4 md:px-5 md:py-5"
+  "flex aspect-square w-full max-w-[140px] sm:max-w-none min-w-0 items-center justify-center rounded-2xl border-2 px-3 py-3 transition-colors sm:px-4 sm:py-4 md:px-5 md:py-5"
 
 const matchCardMatchedSurfaceClass =
   "border-amber-500 bg-amber-50 text-amber-950"

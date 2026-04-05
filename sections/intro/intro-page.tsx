@@ -1,12 +1,14 @@
 "use client"
 
+import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { icons } from "@/lib/icons"
 
 export type IntroOutline = {
   objective: string
   listHeading?: string
-  items: string[]
+  items: { icon: LucideIcon; label: string }[]
 }
 
 export const DEFAULT_INTRO_COPY = {
@@ -18,11 +20,22 @@ export const DEFAULT_INTRO_COPY = {
       "By the end you will be able to read any classroom situation and choose the right game type on the spot.",
     listHeading: "Here's what you'll do:",
     items: [
-      "Feel what it is like to be a student in different game types.",
-      "Name the patterns you already use and when they help.",
-      "Understand why each type works, and when it backfires.",
-      "Read the room on the spot using a simple diagnostic frame.",
-      "Take the framework into your next lesson with confidence.",
+      {
+        icon: icons.demoOutline,
+        label: "Feel what it is like to be a student in different game types.",
+      },
+      {
+        icon: icons.recognition,
+        label: "Name the patterns you already use and when they help.",
+      },
+      {
+        icon: icons.assessment,
+        label: "Understand why each type works, and when it backfires.",
+      },
+      {
+        icon: icons.reflection,
+        label: "Read the room on the spot using a simple diagnostic frame.",
+      }
     ],
   } satisfies IntroOutline,
 } as const
@@ -55,7 +68,7 @@ export function IntroPage({
       />
       <div className="absolute inset-0 bg-black/35" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1200px] px-5 py-12 sm:px-10 sm:py-16">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-intro px-5 py-12 sm:px-10 sm:py-16">
         <div className="flex w-full flex-col items-center justify-center gap-10 lg:gap-12">
           <div className="grid w-full gap-12 lg:grid-cols-[1fr_400px] lg:items-center lg:gap-16 xl:grid-cols-[1fr_440px]">
             <header className="text-white lg:max-w-xl">
@@ -69,10 +82,19 @@ export function IntroPage({
               <div className="rounded-[28px] bg-white px-7 py-8 text-slate-900 shadow-[0_4px_24px_rgba(0,0,0,0.08)] sm:px-9 sm:py-9">
                 <p className="text-[0.95rem] leading-relaxed sm:text-base">{outline.objective}</p>
                 <h2 className="mt-7 text-[0.95rem] font-bold text-slate-900 sm:text-base">{listHeading}</h2>
-                <ul className="mt-3 list-disc space-y-2.5 pl-5 text-[0.9rem] leading-snug text-slate-800 marker:text-slate-400 sm:text-[0.95rem]">
-                  {outline.items.map((item, index) => (
-                    <li key={`${index}-${item}`}>{item}</li>
-                  ))}
+                <ul className="mt-3 list-none space-y-2.5 text-[0.9rem] leading-snug text-slate-800 sm:text-[0.95rem]">
+                  {outline.items.map((item, index) => {
+                    const Icon = item.icon
+                    return (
+                      <li key={`${index}-${item.label}`} className="flex gap-3">
+                        <Icon
+                          className="mt-0.5 h-5 w-5 shrink-0 text-slate-500"
+                          aria-hidden
+                        />
+                        <span className="leading-snug">{item.label}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             </div>

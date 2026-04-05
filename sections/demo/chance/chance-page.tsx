@@ -10,7 +10,7 @@ export type ChancePageProps = {
 export function ChancePage({ onContinue }: ChancePageProps) {
   return (
     <DemoStyleLayout mainClassName={DEMO_MAIN_WIDE}>
-      <div className="flex w-full flex-col items-center gap-6">
+      <div className="flex w-full max-w-4xl flex-col items-center gap-6">
         <CustomChanceEngine className="w-full" onContinueAfterResult={onContinue} />
       </div>
     </DemoStyleLayout>

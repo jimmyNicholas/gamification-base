@@ -21,11 +21,28 @@
   --font-size-3xl: 1.875rem;    /* 30px */
   --font-size-4xl: 2.25rem;     /* 36px */
 
+  /* Spacing scale for consistent layout */
+  --spacing-section-sm: 2.5rem;  /* 40px - mobile section padding */
+  --spacing-section: 3.5rem;      /* 56px - tablet section padding */
+  --spacing-section-lg: 4rem;     /* 64px - desktop section padding */
+  --spacing-content-xs: 0.75rem;  /* 12px */
+  --spacing-content-sm: 1rem;     /* 16px */
+  --spacing-content: 1.5rem;      /* 24px */
+  --spacing-content-lg: 2rem;     /* 32px */
+  --spacing-content-xl: 3rem;     /* 48px */
+
+  /* Max-width tokens for consistent sizing */
+  --max-w-content: 64rem;      /* 1024px - default content */
+  --max-w-wide: 85rem;          /* 1360px - wide layouts */
+  --max-w-ultra: 120rem;        /* 1920px - ultra-wide */
+  --max-w-intro: 75rem;         /* 1200px - intro page */
+
   /* Section background colors */
   --color-section-demo: var(--section-demo);
   --color-section-demo-amber: var(--section-demo-amber);
   --color-section-recognition: var(--section-recognition);
   --color-section-assessment: var(--section-assessment);
+  --color-section-reflection: var(--section-reflection);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -111,6 +128,7 @@
   --section-demo-amber: #fffbeb;
   --section-recognition: #fff4d9;
   --section-assessment: #fce7f3;
+  --section-reflection: #dbeafe;
 }
 
 .dark {
@@ -163,5 +181,26 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .layout-padding-default {
+    @apply px-6 py-14 sm:px-10 sm:py-16;
+  }
+  .layout-padding-wide {
+    @apply px-4 py-10 sm:px-6 sm:py-12 md:py-14 lg:px-8;
+  }
+  .max-w-intro {
+    max-width: var(--max-w-intro);
+  }
+  .max-w-content {
+    max-width: var(--max-w-content);
+  }
+  .max-w-wide {
+    max-width: var(--max-w-wide);
+  }
+  .max-w-ultra {
+    max-width: var(--max-w-ultra);
   }
 }

@@ -1,17 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import {
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  Dices,
-  Lightbulb,
-  PenLine,
-  Sparkles,
-  Target
-} from "lucide-react"
 
+import { icons } from "@/lib/icons"
 import { cn } from "@/lib/utils"
 
 export type CoursePhase =
@@ -31,14 +22,14 @@ export type CoursePhase =
 const NAV_ITEMS: {
   phase: CoursePhase
   label: string
-  Icon: typeof BookOpen
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }[] = [
-  { phase: "intro", label: "Intro", Icon: BookOpen },
-  { phase: "demoOutline", label: "Demo", Icon: Dices },
-  { phase: "recognition", label: "Recognition", Icon: Sparkles },
-  { phase: "book", label: "Analysis", Icon: Lightbulb },
-  { phase: "axisTogether", label: "Assessment", Icon: Target },
-  { phase: "reflection", label: "Reflection", Icon: PenLine },
+  { phase: "intro", label: "Intro", Icon: icons.intro },
+  { phase: "demoOutline", label: "Demo", Icon: icons.demoOutline },
+  { phase: "recognition", label: "Recognition", Icon: icons.recognition },
+  { phase: "book", label: "Analysis", Icon: icons.analysis },
+  { phase: "axisTogether", label: "Assessment", Icon: icons.assessment },
+  { phase: "reflection", label: "Reflection", Icon: icons.reflection },
 ]
 
 type CourseNavPanelProps = {
@@ -55,30 +46,34 @@ export function CourseNavPanel({ phase, onNavigate }: CourseNavPanelProps) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed right-0 top-1/2 z-50 flex h-14 w-5 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-black/15 bg-white/95 text-black shadow-sm backdrop-blur-sm hover:bg-black/4"
+          className="fixed right-0 top-1/2 z-50 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-black/15 bg-white/95 text-black shadow-sm backdrop-blur-sm hover:bg-black/4 hidden md:flex h-14 w-5"
           aria-label="Open course navigation"
         >
-          <ChevronLeft className="size-3.5 shrink-0" aria-hidden />
+          <icons.chevronLeft className="size-3.5 shrink-0" aria-hidden />
         </button>
       ) : null}
 
       <aside
         className={cn(
-          "sticky top-0 flex h-screen shrink-0 flex-col items-center border-l border-black/15 bg-white/95 py-2 backdrop-blur-sm transition-[width,opacity] duration-200 ease-out",
-          open ? "w-10 opacity-100" : "pointer-events-none w-0 overflow-hidden border-0 opacity-0"
+          "sticky top-0 h-screen shrink-0 flex-col items-center border-l border-black/15 bg-white/95 py-2 backdrop-blur-sm transition-[width,opacity] duration-200 ease-out hidden md:flex",
+          open ? "w-[3.75rem] opacity-100" : "pointer-events-none w-0 overflow-hidden border-0 opacity-0"
         )}
-        aria-label="Course navigation"
+        role="complementary"
+        aria-label="Course navigation panel"
       >
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="mb-1 flex size-7 items-center justify-center rounded-md text-black/60 hover:bg-black/6 hover:text-black"
+          className="mb-1 flex h-11 w-11 items-center justify-center rounded-md text-black/60 hover:bg-black/6 hover:text-black"
           aria-label="Hide navigation"
         >
-          <ChevronRight className="size-3.5" aria-hidden />
+          <icons.chevronRight className="size-3.5" aria-hidden />
         </button>
 
-        <nav className="flex flex-1 flex-col items-center gap-1 pt-1" aria-orientation="vertical">
+        <nav
+          className="flex flex-1 flex-col items-center gap-1 pt-1"
+          aria-label="Course sections"
+        >
           {NAV_ITEMS.map(({ phase: id, label, Icon }) => {
             const active = phase === id
             return (
@@ -90,13 +85,13 @@ export function CourseNavPanel({ phase, onNavigate }: CourseNavPanelProps) {
                 aria-label={label}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex size-7 items-center justify-center rounded-md transition-colors",
+                  "flex h-11 w-11 items-center justify-center rounded-md transition-colors",
                   active
                     ? "bg-black text-white"
                     : "text-black/70 hover:bg-black/6 hover:text-black"
                 )}
               >
-                <Icon className="size-3.5 shrink-0" aria-hidden />
+                <Icon className="size-4 shrink-0" aria-hidden />
               </button>
             )
           })}

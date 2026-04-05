@@ -35,7 +35,7 @@ const choiceButtonClassName =
   "min-h-12 w-full rounded-xl border border-black/20 bg-white px-4 py-3 text-left text-sm font-medium leading-snug text-black shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-colors hover:bg-black/[0.03] sm:text-base"
 
 const hatTileClassName =
-  "flex aspect-square h-[min(26vw,120px)] w-[min(26vw,120px)] shrink-0 items-center justify-center rounded-xl border-2 border-black/20 bg-white p-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] outline-none transition-[background-color,border-color,box-shadow,transform] hover:border-blue-950/45 hover:bg-blue-950/[0.09] hover:shadow-[0_4px_14px_rgba(30,58,138,0.18)] focus-visible:ring-2 focus-visible:ring-blue-900/35 focus-visible:ring-offset-2 sm:h-[min(22vw,132px)] sm:w-[min(22vw,132px)] sm:p-2 md:h-[118px] md:w-[118px] lg:h-[132px] lg:w-[132px]"
+  "flex aspect-square h-[min(26vw,120px)] w-[min(26vw,120px)] shrink-0 items-center justify-center rounded-xl border-2 border-black/20 bg-white p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] outline-none transition-[background-color,border-color,box-shadow,transform] hover:border-blue-950/45 hover:bg-blue-950/[0.09] hover:shadow-[0_4px_14px_rgba(30,58,138,0.18)] focus-visible:ring-2 focus-visible:ring-blue-900/35 focus-visible:ring-offset-2 sm:h-[min(22vw,132px)] sm:w-[min(22vw,132px)] sm:p-3 md:h-[118px] md:w-[118px] lg:h-[132px] lg:w-[132px]"
 
 function sceneImageSrc(scene: MimicryScene): string {
   const local = SCENE_ART[scene.id as MimicrySceneId]
@@ -185,10 +185,10 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
 
   return (
     <MimicryLayout>
-      <div className="flex w-full flex-col items-center gap-3">
+      <div className="flex w-full max-w-6xl flex-col items-center gap-3">
         <div className={demoStageMimicryFrameClassName}>
           <div
-            className="relative w-full shrink-0 md:absolute md:inset-0 md:h-full md:aspect-auto"
+            className="relative w-full shrink-0 lg:absolute lg:inset-0 lg:h-full lg:aspect-auto"
             style={{ aspectRatio: `${FRAME_W} / ${FRAME_H}` }}
           >
             {outgoingSrc && (
@@ -238,22 +238,22 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
             className={cn(
               "relative z-10 w-full shrink-0 border-t border-black/10 bg-white p-4 sm:p-5",
               !isCafeScene &&
-                "md:absolute md:inset-x-auto md:bottom-auto md:left-auto md:top-1/2 md:-translate-y-1/2 md:border-t-0 md:bg-transparent md:p-0 md:right-[max(1rem,4.5%)]",
+                "lg:absolute lg:inset-x-auto lg:bottom-auto lg:left-auto lg:top-1/2 lg:-translate-y-1/2 lg:border-t-0 lg:bg-transparent lg:p-0 lg:right-[max(1rem,4.5%)]",
               !isCafeScene &&
                 !isHatAffirmation &&
-                "md:w-[min(42%,400px)] md:max-w-none xl:w-[min(40%,480px)] 2xl:w-[min(38%,520px)]",
+                "lg:w-[min(42%,400px)] lg:max-w-none xl:w-[min(40%,480px)] 2xl:w-[min(38%,520px)]",
               !isCafeScene &&
                 isHatAffirmation &&
-                "md:w-auto md:max-w-[min(42%,400px)] xl:max-w-[min(40%,480px)] 2xl:max-w-[min(38%,520px)]",
+                "lg:w-auto lg:max-w-[min(42%,400px)] xl:max-w-[min(40%,480px)] 2xl:max-w-[min(38%,520px)]",
               isCafeScene &&
-                "md:absolute md:inset-x-4 md:top-1/2 md:bottom-auto md:-translate-y-1/2 md:border-t-0 md:bg-transparent md:p-0 lg:inset-x-8"
+                "lg:absolute lg:inset-x-4 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2 lg:border-t-0 lg:bg-transparent lg:p-0 xl:inset-x-8"
             )}
           >
             <div
               className={cn(
                 fgMotionClass,
                 "flex w-full flex-col gap-3 sm:gap-4",
-                isHatAffirmation && "md:w-fit md:max-w-full",
+                isHatAffirmation && "lg:w-fit lg:max-w-full",
                 incomingFadeIn ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
                 "motion-reduce:translate-y-0"
               )}

@@ -416,7 +416,7 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
 
         {step === 1 && (
           <div className="flex w-full flex-col gap-6">
-            <h2 className={demoActivityHeadingClassName}>
+            <h2 className="text-center text-2xl font-bold leading-snug text-black sm:text-3xl md:text-4xl">
               Which skills do you find most enjoyable to teach?
             </h2>
 
