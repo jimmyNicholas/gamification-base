@@ -14,8 +14,82 @@ import {
   getCompleteSessionData,
   clearXAPISession,
 } from "@/lib/xapi-session"
-import { loadDemoMatchOutcomesFromSession } from "@/lib/demo-match-outcomes-session"
-import { cn } from "@/lib/utils"
+import {
+  clearDemoMatchOutcomesSession,
+  DEMO_OUTCOMES_CLEAR_EVENT,
+  loadDemoMatchOutcomesFromSession,
+} from "@/lib/demo-match-outcomes-session"
+import { QUADRANT_PLAY_CATEGORY_TILES } from "@/sections/demo/quadrants-axes/quadrants-axes-data"
+import type { DemoMatchOutcomes } from "@/sections/demo/match-the-four/demo-match-outcomes"
+
+/** Must match correct answers in `sections/analysis/axis-page.tsx` (Agency=left, Fate=right, Self-intact=top, Self-dissolved=bottom). */
+const AXIS_EXPECTED_LABEL = {
+  agencyQ1: "Agency",
+  agencyQ2: "Fate",
+  selfQ1: "Self-intact",
+  selfQ2: "Self-dissolved",
+} as const
+
+function axisQuestionStatus(
+  choice: string | null,
+  expected: string
+): "correct" | "incorrect" | null {
+  if (choice === null) return null
+  return choice === expected ? "correct" : "incorrect"
+}
+
+function formatAxisPercentCorrect(o: DemoMatchOutcomes): string {
+  const pairs: Array<[string | null, string]> = [
+    [o.axisAgencyQ1Choice, AXIS_EXPECTED_LABEL.agencyQ1],
+    [o.axisAgencyQ2Choice, AXIS_EXPECTED_LABEL.agencyQ2],
+    [o.axisSelfQ1Choice, AXIS_EXPECTED_LABEL.selfQ1],
+    [o.axisSelfQ2Choice, AXIS_EXPECTED_LABEL.selfQ2],
+  ]
+  const answered = pairs.filter(([c]) => c !== null) as Array<[string, string]>
+  if (answered.length === 0) return "—"
+  const correct = answered.filter(([c, exp]) => c === exp).length
+  return `${Math.round((100 * correct) / answered.length)}%`
+}
+
+function hasDemoSectionData(o: DemoMatchOutcomes): boolean {
+  return (
+    o.competitionTimeMs !== null ||
+    o.competitionAnimalEmoji !== null ||
+    o.competitionReplayCount > 0 ||
+    o.chanceQuestionNumber !== null ||
+    o.chanceAnswer !== null ||
+    o.roleplayHatLabel !== null ||
+    o.roleplayHatImageSrc !== null ||
+    o.roleplayTomResponse !== null ||
+    o.chaosQ1Answer !== null ||
+    o.chaosQ2Skills.length > 0
+  )
+}
+
+function hasRecognitionSectionData(o: DemoMatchOutcomes): boolean {
+  return (
+    o.recognitionMatchMistakes > 0 ||
+    o.recognitionCardFlips > 0 ||
+    o.recognitionReflectionUsed
+  )
+}
+
+function hasAxisSectionData(o: DemoMatchOutcomes): boolean {
+  return (
+    o.axisAgencyQ1Choice !== null ||
+    o.axisAgencyQ2Choice !== null ||
+    o.axisSelfQ1Choice !== null ||
+    o.axisSelfQ2Choice !== null
+  )
+}
+
+function hasAssessmentSectionData(o: DemoMatchOutcomes): boolean {
+  return o.assessmentSituationResults.some((r) => r != null)
+}
+
+function hasReflectionSectionData(o: DemoMatchOutcomes): boolean {
+  return o.reflectionFinalTextUsed
+}
 
 type CollapsibleSectionProps = {
   title: string
@@ -97,8 +171,19 @@ export function AdminTracking() {
     ) {
       clearStatements()
       clearXAPISession()
+      clearDemoMatchOutcomesSession()
+      window.dispatchEvent(new Event(DEMO_OUTCOMES_CLEAR_EVENT))
       refreshData()
     }
+  }
+
+  const formatAssessmentPercent = (
+    results: DemoMatchOutcomes["assessmentSituationResults"]
+  ) => {
+    const filled = results.filter((r): r is NonNullable<typeof r> => r != null)
+    if (filled.length === 0) return "—"
+    const matches = filled.filter((r) => r.chosen === r.ideal).length
+    return `${Math.round((100 * matches) / filled.length)}%`
   }
 
   const formatDuration = (ms: number) => {
@@ -117,22 +202,22 @@ export function AdminTracking() {
 
   const outcomes = sessionData?.outcomes
 
-  // Check if there's any actual recorded data (not just default null values)
-  const hasAnyData = outcomes && (
-    outcomes.competitionTimeMs !== null ||
-    outcomes.competitionAnimalEmoji !== null ||
-    outcomes.competitionReplayCount > 0 ||
-    outcomes.chanceQuestionNumber !== null ||
-    outcomes.chanceAnswer !== null ||
-    outcomes.roleplayHatLabel !== null ||
-    outcomes.roleplayHatImageSrc !== null ||
-    outcomes.roleplayTomResponse !== null ||
-    outcomes.chaosQ1Answer !== null ||
-    outcomes.chaosQ2Skills.length > 0 ||
-    outcomes.recognitionMatchMistakes > 0 ||
-    outcomes.recognitionCardFlips > 0 ||
-    outcomes.recognitionReflectionUsed
-  )
+  const hasAnyData =
+    outcomes &&
+    (hasDemoSectionData(outcomes) ||
+      hasRecognitionSectionData(outcomes) ||
+      hasAxisSectionData(outcomes) ||
+      hasAssessmentSectionData(outcomes) ||
+      hasReflectionSectionData(outcomes))
+
+  const canClearSession =
+    statements.length > 0 ||
+    (outcomes &&
+      (hasDemoSectionData(outcomes) ||
+        hasRecognitionSectionData(outcomes) ||
+        hasAxisSectionData(outcomes) ||
+        hasAssessmentSectionData(outcomes) ||
+        hasReflectionSectionData(outcomes)))
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto">
@@ -198,7 +283,8 @@ export function AdminTracking() {
       {hasAnyData && (
         <CollapsibleSection title="Answers Given" defaultOpen={true}>
           <div className="flex flex-col gap-4">
-            {/* Demonstration */}
+            {/* Demonstration — only if this run recorded demo-phase answers */}
+            {hasDemoSectionData(outcomes) && (
             <div>
               <h5 className="mb-2 text-xs font-semibold uppercase tracking-wide text-black/60">
                 Demonstration
@@ -270,9 +356,10 @@ export function AdminTracking() {
                 )}
               </div>
             </div>
+            )}
 
             {/* Recognition */}
-            {(outcomes.recognitionMatchMistakes > 0 || outcomes.recognitionReflectionUsed) && (
+            {hasRecognitionSectionData(outcomes) && (
               <div>
                 <h5 className="mb-2 text-xs font-semibold uppercase tracking-wide text-black/60">
                   Recognition
@@ -299,87 +386,86 @@ export function AdminTracking() {
             )}
 
             {/* Axis (Analysis) */}
+            {hasAxisSectionData(outcomes) && (
             <div>
               <h5 className="mb-2 text-xs font-semibold uppercase tracking-wide text-black/60">
                 Axis
               </h5>
               <div className="flex flex-col gap-1.5 text-sm">
+                {(
+                  [
+                    ["Agency ↔ Fate Q1", outcomes.axisAgencyQ1Choice, AXIS_EXPECTED_LABEL.agencyQ1],
+                    ["Agency ↔ Fate Q2", outcomes.axisAgencyQ2Choice, AXIS_EXPECTED_LABEL.agencyQ2],
+                    ["Self-intact ↔ Self-dissolved Q1", outcomes.axisSelfQ1Choice, AXIS_EXPECTED_LABEL.selfQ1],
+                    ["Self-intact ↔ Self-dissolved Q2", outcomes.axisSelfQ2Choice, AXIS_EXPECTED_LABEL.selfQ2],
+                  ] as const
+                ).map(([label, choice, expected], idx) => {
+                  const status = axisQuestionStatus(choice, expected)
+                  if (status === null) return null
+                  return (
+                    <div key={idx}>
+                      <span className="text-black/60">{label}: </span>
+                      <span className="font-semibold text-black">{status}</span>
+                    </div>
+                  )
+                })}
                 <div>
-                  <span className="text-black/60">
-                    Agency ↔ Fate Q1 Choice:{" "}
-                  </span>
+                  <span className="text-black/60">% correct (of answered): </span>
                   <span className="font-semibold text-black">
-                    {/* TODO: Track axis choices */}-
+                    {formatAxisPercentCorrect(outcomes)}
                   </span>
-                </div>
-                <div>
-                  <span className="text-black/60">
-                    Agency ↔ Fate Q2 Choice:{" "}
-                  </span>
-                  <span className="font-semibold text-black">-</span>
-                </div>
-                <div>
-                  <span className="text-black/60">
-                    Self-Intact ↔ Self-Dissolved Q1:{" "}
-                  </span>
-                  <span className="font-semibold text-black">-</span>
-                </div>
-                <div>
-                  <span className="text-black/60">
-                    Self-Intact ↔ Self-Dissolved Q2:{" "}
-                  </span>
-                  <span className="font-semibold text-black">-</span>
                 </div>
               </div>
             </div>
+            )}
 
             {/* Assessment */}
+            {hasAssessmentSectionData(outcomes) && (
             <div>
               <h5 className="mb-2 text-xs font-semibold uppercase tracking-wide text-black/60">
                 Assessment
               </h5>
               <div className="flex flex-col gap-1.5 text-sm">
+                {[0, 1, 2, 3].map((i) => {
+                  const row = outcomes.assessmentSituationResults[i]
+                  if (!row) return null
+                  const chosenPlay = QUADRANT_PLAY_CATEGORY_TILES[row.chosen].label
+                  const idealPlay = QUADRANT_PLAY_CATEGORY_TILES[row.ideal].label
+                  return (
+                    <div key={i}>
+                      <span className="text-black/60">Situation {i + 1}: </span>
+                      <span className="font-semibold text-black">
+                        {`${chosenPlay} (ideal ${idealPlay})`}
+                      </span>
+                    </div>
+                  )
+                })}
                 <div>
-                  <span className="text-black/60">Situation 1 Choice: </span>
+                  <span className="text-black/60">% correct (ideal match, of completed): </span>
                   <span className="font-semibold text-black">
-                    {/* TODO: Track situation choices */}-
-                  </span>
-                </div>
-                <div>
-                  <span className="text-black/60">Situation 2 Choice: </span>
-                  <span className="font-semibold text-black">-</span>
-                </div>
-                <div>
-                  <span className="text-black/60">Situation 3 Choice: </span>
-                  <span className="font-semibold text-black">-</span>
-                </div>
-                <div>
-                  <span className="text-black/60">Situation 4 Choice: </span>
-                  <span className="font-semibold text-black">-</span>
-                </div>
-                <div>
-                  <span className="text-black/60">% Best Choices: </span>
-                  <span className="font-semibold text-black">
-                    {/* TODO: Calculate percentage */}-
+                    {formatAssessmentPercent(outcomes.assessmentSituationResults)}
                   </span>
                 </div>
               </div>
             </div>
+            )}
 
             {/* Reflection */}
+            {hasReflectionSectionData(outcomes) && (
             <div>
               <h5 className="mb-2 text-xs font-semibold uppercase tracking-wide text-black/60">
                 Reflection
               </h5>
               <div className="flex flex-col gap-1.5 text-sm">
                 <div>
-                  <span className="text-black/60">Reflection Box Used: </span>
+                  <span className="text-black/60">Reflection box used: </span>
                   <span className="font-semibold text-black">
-                    {/* TODO: Track reflection box */}-
+                    Yes
                   </span>
                 </div>
               </div>
             </div>
+            )}
           </div>
         </CollapsibleSection>
       )}
@@ -413,7 +499,7 @@ export function AdminTracking() {
           variant="outline"
           size="sm"
           className="text-red-600 hover:bg-red-50 hover:text-red-700"
-          disabled={statements.length === 0}
+          disabled={!canClearSession}
         >
           Clear Session
         </Button>

@@ -69,15 +69,77 @@ export type xAPIStatement = {
   timestamp: string // ISO 8601 format
 }
 
-// In-memory storage for demo purposes
+const STORAGE_KEY = "gamification-base:xapi-tracking-state"
+
+type PersistedXapiState = {
+  sessionId: string
+  sessionStartTime: number
+  statements: xAPIStatement[]
+}
+
+// In-memory cache (must stay in sync with sessionStorage — see ensureHydrated / persistState)
 let statements: xAPIStatement[] = []
 let sessionId: string | null = null
 let sessionStartTime: number | null = null
 
+function persistState(): void {
+  if (typeof window === "undefined") return
+  if (sessionId === null || sessionStartTime === null) {
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY)
+    } catch {
+      /* ignore */
+    }
+    return
+  }
+  try {
+    const payload: PersistedXapiState = {
+      sessionId,
+      sessionStartTime,
+      statements,
+    }
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+  } catch {
+    /* quota / private mode */
+  }
+}
+
 /**
- * Initialize a new tracking session
+ * Hydrate memory from sessionStorage when this JS module instance has no session.
+ * Next.js can duplicate client chunks so `initializeSession` in one copy and
+ * `getSessionSummary` in another would otherwise see different in-memory state.
+ */
+function ensureHydrated(): void {
+  if (typeof window === "undefined") return
+  if (sessionStartTime !== null && sessionId !== null) return
+  try {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    const data = JSON.parse(raw) as Partial<PersistedXapiState>
+    if (
+      typeof data.sessionId !== "string" ||
+      typeof data.sessionStartTime !== "number" ||
+      !Array.isArray(data.statements)
+    ) {
+      return
+    }
+    sessionId = data.sessionId
+    sessionStartTime = data.sessionStartTime
+    statements = data.statements
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Initialize a new tracking session (or resume the persisted one in this tab).
  */
 export function initializeSession(learnerName: string = "Demo Learner"): string {
+  ensureHydrated()
+  if (sessionId !== null && sessionStartTime !== null && statements.length > 0) {
+    return sessionId
+  }
+
   sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(7)}`
   sessionStartTime = Date.now()
   statements = []
@@ -88,6 +150,7 @@ export function initializeSession(learnerName: string = "Demo Learner"): string 
     objectId: "https://gamification-base.example.com/course",
     objectName: "Gamification E-Learning Course",
     objectDescription: "Interactive course exploring game mechanics in learning",
+    learnerName,
   })
 
   return sessionId
@@ -97,6 +160,7 @@ export function initializeSession(learnerName: string = "Demo Learner"): string 
  * Get the current session ID
  */
 export function getSessionId(): string | null {
+  ensureHydrated()
   return sessionId
 }
 
@@ -187,6 +251,7 @@ export function trackStatement(params: {
   }
 
   statements.push(statement)
+  persistState()
   return statement
 }
 
@@ -307,6 +372,7 @@ export function trackAnswer(params: {
  * Get all tracked statements
  */
 export function getStatements(): xAPIStatement[] {
+  ensureHydrated()
   return [...statements]
 }
 
@@ -314,6 +380,7 @@ export function getStatements(): xAPIStatement[] {
  * Get summary statistics
  */
 export function getSessionSummary() {
+  ensureHydrated()
   if (!sessionStartTime) {
     return null
   }
@@ -354,6 +421,13 @@ export function clearStatements(): void {
   statements = []
   sessionId = null
   sessionStartTime = null
+  if (typeof window !== "undefined") {
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY)
+    } catch {
+      /* ignore */
+    }
+  }
 }
 
 /**

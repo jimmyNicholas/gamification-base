@@ -3,6 +3,8 @@
 import * as React from "react"
 
 import { BOOK_DRAG_ACTIVITIES } from "@/sections/recog/book-drag-activities"
+import type { BookDragActivity } from "@/sections/recog/book-drag-activities"
+import { shuffleArray } from "@/sections/demo/shuffle-array"
 import {
   demoPrimaryCtaNarrowClassName,
   demoPrimaryCtaNativeFocusClassName,
@@ -21,7 +23,7 @@ const FLIP_CARDS: Partial<Record<QuadrantId, { icon: string; label: string; back
   Q1: { icon: "🏆", label: "Competition", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Competition 🏆</h3><p>Games where one player or team wins by outperforming the others.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>races, quizzes, spelling bees, timed drills, leaderboards, debates, trivia.</p></div></div> },
   Q2: { icon: "🎭", label: "Roleplay", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Roleplay 🎭</h3><p>Games where students become someone else.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>skits, gestures, email response writing, situational acting</p></div></div> },
   Q3: { icon: "🎲", label: "Chance", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Chance 🎲</h3><p>Games where the outcome depends on luck rather than skill.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>dice, cards, spinning wheels, coins, envelopes, raffles</p></div></div> },
-  Q4: { icon: "💥", label: "Chaos", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Chaos 💥</h3><p>Games where the outcome is unpredictable and random.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>charades, free association, word association, random number generators, random word generators, random sentence generators, random paragraph generators, random story generators, random poem generators, random song generators, random dance generators, random art generators, random craft generators, random science generators, random math generators, random history generators, random geography generators, random science generators, random math generators, random history generators, random geography generators</p></div></div> },
+  Q4: { icon: "💥", label: "Chaos", back: <div className="text-left leading-relaxed space-y-4"><div><h3 className="text-lg font-bold">Chaos 💥</h3><p>Games where the outcome is unpredictable and random.</p></div><div><h3 className="text-md font-bold">Examples:</h3><p>rapid movement, running, speed, surprise</p></div></div> },
 }
 
 export type PostRecognitionPageProps = {
@@ -34,6 +36,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
   const [everSeenBack, setEverSeenBack] = React.useState<Partial<Record<QuadrantId, boolean>>>({})
   const [placedActivityById, setPlacedActivityById] = React.useState<Partial<Record<string, QuadrantId>>>({})
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null)
+  const [dragActivityOrder, setDragActivityOrder] = React.useState<BookDragActivity[] | null>(null)
 
   const onBookFlipToggle = React.useCallback((q: QuadrantId) => {
     setCardFlipped((prev) => {
@@ -46,6 +49,11 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
   }, [])
 
   const allCardsSeenBackOnce = ALL_QUADRANTS.every((q) => everSeenBack[q])
+
+  React.useEffect(() => {
+    if (!allCardsSeenBackOnce) return
+    setDragActivityOrder((prev) => prev ?? shuffleArray([...BOOK_DRAG_ACTIVITIES]))
+  }, [allCardsSeenBackOnce])
 
   const handleBookTileActivityDrop = React.useCallback((q: QuadrantId, activityId: string) => {
     const act = BOOK_DRAG_ACTIVITIES.find((a) => a.id === activityId)
@@ -105,10 +113,10 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
     return out
   }, [placedActivityById])
 
-  const remainingActivities = React.useMemo(
-    () => BOOK_DRAG_ACTIVITIES.filter((a) => placedActivityById[a.id] == null),
-    [placedActivityById]
-  )
+  const remainingActivities = React.useMemo(() => {
+    const ordered = dragActivityOrder ?? BOOK_DRAG_ACTIVITIES
+    return ordered.filter((a) => placedActivityById[a.id] == null)
+  }, [placedActivityById, dragActivityOrder])
 
   return (
     <RecogLayout dataActivity="postRecognition">

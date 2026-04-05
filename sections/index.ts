@@ -43,7 +43,12 @@ export { PostRecognitionPage, type PostRecognitionPageProps } from "@/sections/r
 
 export { RecogLayout, type RecogLayoutProps } from "@/sections/recog/recog-layout"
 
-export { AxisPage, type AxisPageProps, type AxisPageStep } from "@/sections/analysis/axis-page"
+export {
+  AxisPage,
+  type AxisPageProps,
+  type AxisPageStep,
+  type AxisQuizStep,
+} from "@/sections/analysis/axis-page"
 
 export {
   AssessmentPage,
@@ -56,6 +61,7 @@ export { ReflectionPage, type ReflectionPageProps } from "@/sections/reflection/
 
 export {
   initialDemoMatchOutcomes,
+  type AssessmentSituationResult,
   type DemoMatchOutcomes,
 } from "@/sections/demo/match-the-four/demo-match-outcomes"
 

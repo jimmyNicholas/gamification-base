@@ -13,6 +13,8 @@ import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 
 export type ReflectionPageProps = {
   onContinue?: () => void
+  /** Fires once when the learner enters text in the reflection box (for session analytics). */
+  onReflectionTextUsed?: () => void
 }
 
 type QuadState = "invisible" | "inactive" | "color" | "highlighted"
@@ -74,7 +76,20 @@ function AxisStateRadioGroup({
   )
 }
 
-export function ReflectionPage({ onContinue }: ReflectionPageProps) {
+export function ReflectionPage({ onContinue, onReflectionTextUsed }: ReflectionPageProps) {
+  const [reflectionTracked, setReflectionTracked] = React.useState(false)
+
+  const handleReflectionChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const text = e.target.value
+      if (!reflectionTracked && text.trim().length > 0) {
+        onReflectionTextUsed?.()
+        setReflectionTracked(true)
+      }
+    },
+    [reflectionTracked, onReflectionTextUsed]
+  )
+
   const [quadrantStates, setQuadrantStates] = React.useState<Record<QuadrantId, QuadState>>({
     Q1: "inactive",
     Q2: "inactive",
@@ -112,6 +127,7 @@ export function ReflectionPage({ onContinue }: ReflectionPageProps) {
             aria-labelledby="reflection-heading"
             className="min-h-[220px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-black/90 outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
             placeholder=""
+            onChange={handleReflectionChange}
           />
           {onContinue ? (
             <button

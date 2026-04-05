@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { CourseNavPanel, type CoursePhase } from "@/components/course-nav-panel"
 import {
   clearDemoMatchOutcomesSession,
+  DEMO_OUTCOMES_CLEAR_EVENT,
   loadDemoMatchOutcomesFromSession,
   saveDemoMatchOutcomesToSession,
 } from "@/lib/demo-match-outcomes-session"
@@ -16,6 +17,7 @@ import {
   initializeXAPISession,
   trackPhaseEntry,
 } from "@/lib/xapi-session"
+import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 import {
   ChancePage,
   ChaosPage,
@@ -31,6 +33,7 @@ import {
   AxisPage,
   AssessmentPage,
   ReflectionPage,
+  type AxisQuizStep,
   type DemoMatchOutcomes,
 } from "@/sections"
 import { AdminPage } from "@/sections/admin/admin-page"
@@ -67,6 +70,14 @@ export default function Home() {
     const loaded = loadDemoMatchOutcomesFromSession()
     if (loaded) setMatchOutcomes(loaded)
     setMatchOutcomesSessionReady(true)
+  }, [])
+
+  useEffect(() => {
+    const onOutcomesCleared = () => {
+      setMatchOutcomes(initialDemoMatchOutcomes())
+    }
+    window.addEventListener(DEMO_OUTCOMES_CLEAR_EVENT, onOutcomesCleared)
+    return () => window.removeEventListener(DEMO_OUTCOMES_CLEAR_EVENT, onOutcomesCleared)
   }, [])
 
   useEffect(() => {
@@ -169,6 +180,50 @@ export default function Home() {
     }))
   }, [])
 
+  const handleAxisQuizSubmit = useCallback(
+    (payload: { step: AxisQuizStep; choiceLabel: string }) => {
+      setMatchOutcomes((o) => {
+        switch (payload.step) {
+          case "agencyQ1":
+            return { ...o, axisAgencyQ1Choice: payload.choiceLabel }
+          case "agencyQ2":
+            return { ...o, axisAgencyQ2Choice: payload.choiceLabel }
+          case "selfQ1":
+            return { ...o, axisSelfQ1Choice: payload.choiceLabel }
+          case "selfQ2":
+            return { ...o, axisSelfQ2Choice: payload.choiceLabel }
+          default:
+            return o
+        }
+      })
+    },
+    []
+  )
+
+  const handleAssessmentSituationSubmit = useCallback(
+    (payload: { slotIndex: number; chosen: QuadrantId; ideal: QuadrantId }) => {
+      const i = payload.slotIndex
+      if (i < 0 || i > 3) return
+      setMatchOutcomes((o) => {
+        const row = { chosen: payload.chosen, ideal: payload.ideal }
+        return {
+          ...o,
+          assessmentSituationResults: [
+            i === 0 ? row : o.assessmentSituationResults[0],
+            i === 1 ? row : o.assessmentSituationResults[1],
+            i === 2 ? row : o.assessmentSituationResults[2],
+            i === 3 ? row : o.assessmentSituationResults[3],
+          ] as DemoMatchOutcomes["assessmentSituationResults"],
+        }
+      })
+    },
+    []
+  )
+
+  const handleFinalReflectionTextUsed = useCallback(() => {
+    setMatchOutcomes((o) => ({ ...o, reflectionFinalTextUsed: true }))
+  }, [])
+
   let main: ReactNode
   switch (phase) {
     case "intro":
@@ -213,16 +268,28 @@ export default function Home() {
       main = <PostRecognitionPage onContinue={goToBook} />
       break
     case "book":
-      main = <AxisPage onContinue={goToAssessment} />
+      main = <AxisPage onContinue={goToAssessment} onAxisQuizSubmit={handleAxisQuizSubmit} />
       break
     case "axisTogether":
-      main = <AssessmentPage onContinue={goToReflection} />
+      main = (
+        <AssessmentPage
+          onContinue={goToReflection}
+          onAssessmentSituationSubmit={handleAssessmentSituationSubmit}
+        />
+      )
       break
     case "axesAssessment":
-      main = <AssessmentPage onContinue={goToReflection} />
+      main = (
+        <AssessmentPage
+          onContinue={goToReflection}
+          onAssessmentSituationSubmit={handleAssessmentSituationSubmit}
+        />
+      )
       break
     case "reflection":
-      main = <ReflectionPage onContinue={finishReflection} />
+      main = (
+        <ReflectionPage onContinue={finishReflection} onReflectionTextUsed={handleFinalReflectionTextUsed} />
+      )
       break
     default: {
       const _exhaustive: never = phase

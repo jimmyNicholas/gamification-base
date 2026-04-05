@@ -23,12 +23,16 @@ export type AxisPageStep =
 
 type FlowStep = AxisPageStep
 
+export type AxisQuizStep = "agencyQ1" | "agencyQ2" | "selfQ1" | "selfQ2"
+
 export type AxisPageProps = {
   onContinue?: () => void
   /** When set, the flow starts at this step (e.g. resume mid-section). */
   initialStep?: AxisPageStep
   /** Fires when the current step changes (for syncing course nav). */
   onStepChange?: (step: AxisPageStep) => void
+  /** Fires when the learner submits an answer on an axis quiz step (for session analytics). */
+  onAxisQuizSubmit?: (payload: { step: AxisQuizStep; choiceLabel: string }) => void
 }
 
 type QuizFeedback = { correct: boolean }
@@ -84,7 +88,12 @@ function verticalSide(index: AxisIndex): "top" | "bottom" | null {
   return index <= 1 ? "top" : "bottom"
 }
 
-export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }: AxisPageProps) {
+export function AxisPage({
+  onContinue,
+  initialStep = "quizIntro",
+  onStepChange,
+  onAxisQuizSubmit,
+}: AxisPageProps) {
   const [step, setStep] = React.useState<FlowStep>(initialStep)
   const [horizontalIndex, setHorizontalIndex] = React.useState<AxisIndex>(AXIS_CENTER)
   const [verticalIndex, setVerticalIndex] = React.useState<AxisIndex>(AXIS_CENTER)
@@ -131,12 +140,20 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
   const submitAgency = (correctSide: "left" | "right") => {
     const side = horizontalSide(horizontalIndex)
     if (!side) return
+    const choiceLabel = side === "left" ? "Agency" : "Fate"
+    if (step === "agencyQ1" || step === "agencyQ2") {
+      onAxisQuizSubmit?.({ step, choiceLabel })
+    }
     setQuizFeedback({ correct: side === correctSide })
   }
 
   const submitSelf = (correctSide: "top" | "bottom") => {
     const side = verticalSide(verticalIndex)
     if (!side) return
+    const choiceLabel = side === "top" ? "Self-intact" : "Self-dissolved"
+    if (step === "selfQ1" || step === "selfQ2") {
+      onAxisQuizSubmit?.({ step, choiceLabel })
+    }
     setQuizFeedback({ correct: side === correctSide })
   }
 
@@ -565,7 +582,7 @@ export function AxisPage({ onContinue, initialStep = "quizIntro", onStepChange }
             ) : null}
           </div>
         }
-        rightContent={<div className="flex w-full min-w-0 justify-center">{model}</div>}
+        rightContent={<div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>}
       />
     </ReflectionLayout>
   )

@@ -144,9 +144,20 @@ export type AssessmentPageProps = {
   onContinue?: () => void
   initialStep?: AssessmentPageStep
   onStepChange?: (step: AssessmentPageStep) => void
+  /** Fires when the learner locks in a quadrant for a situation (for session analytics). */
+  onAssessmentSituationSubmit?: (payload: {
+    slotIndex: number
+    chosen: QuadrantId
+    ideal: QuadrantId
+  }) => void
 }
 
-export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange }: AssessmentPageProps) {
+export function AssessmentPage({
+  onContinue,
+  initialStep = "intro",
+  onStepChange,
+  onAssessmentSituationSubmit,
+}: AssessmentPageProps) {
   const situationOrderRef = React.useRef<number[]>(shuffleIndices(ASSESSMENT_SITUATIONS.length))
   const situationOrder = situationOrderRef.current
 
@@ -326,7 +337,16 @@ export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange
               "w-full max-w-lg",
               !canSubmit && "opacity-60"
             )}
-            onClick={() => setSubmitted(true)}
+            onClick={() => {
+              if (liveQuadrant && currentSituation) {
+                onAssessmentSituationSubmit?.({
+                  slotIndex: slot,
+                  chosen: liveQuadrant,
+                  ideal: currentSituation.idealQuadrant,
+                })
+              }
+              setSubmitted(true)
+            }}
           >
             This is my read of the situation.
           </button>
@@ -370,7 +390,7 @@ export function AssessmentPage({ onContinue, initialStep = "intro", onStepChange
           </div>
         }
         rightContent={
-          <div className="flex w-full min-w-0 justify-center">{model}</div>
+          <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
         }
       />
     </ReflectionLayout>
