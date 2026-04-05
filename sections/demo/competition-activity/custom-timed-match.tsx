@@ -35,7 +35,7 @@ export type TimedMatchRightItem = {
 }
 
 type CustomTimedMatchProps = {
-  /** Main instruction shown above the timer (e.g. “Match the animal with their name”). */
+  /** Main instruction shown above the timer (e.g. "Match the animal with their name"). */
   title: string
   leftItems: TimedMatchLeftItem[]
   rightItems: TimedMatchRightItem[]
@@ -45,8 +45,10 @@ type CustomTimedMatchProps = {
   flatSurface?: boolean
   /** Reserved for later phases when completion unlocks the course shell. */
   unlockSignalId?: string
-  /** Called from “Next game” (e.g. advance course phase). `timeMs` is the last completed run when available. */
+  /** Called from "Next game" (e.g. advance course phase). `timeMs` is the last completed run when available. */
   onNextGame?: (payload?: { timeMs: number; animalEmoji?: string }) => void
+  /** Called when "Play again" is clicked (for tracking replay count). */
+  onReplay?: () => void
 }
 
 function formatLiveTimer(ms: number) {
@@ -73,6 +75,7 @@ export function CustomTimedMatch({
   flatSurface = false,
   unlockSignalId: _unlockSignalId,
   onNextGame,
+  onReplay,
 }: CustomTimedMatchProps) {
   void _unlockSignalId
   const totalPairs = useMemo(
@@ -175,6 +178,7 @@ export function CustomTimedMatch({
   }, [])
 
   const playAgain = useCallback(() => {
+    onReplay?.()
     setSelectedLeftId(null)
     setSelectedRightId(null)
     setMatchedMatchIds(new Set())
@@ -188,7 +192,7 @@ export function CustomTimedMatch({
       left: shuffleArray(leftItems),
       right: shuffleArray(rightItems),
     })
-  }, [leftItems, rightItems])
+  }, [leftItems, rightItems, onReplay])
 
   const displayRows = useMemo(() => {
     if (!gameComplete || finalTimeMs == null) return []

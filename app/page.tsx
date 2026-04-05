@@ -9,6 +9,14 @@ import {
   saveDemoMatchOutcomesToSession,
 } from "@/lib/demo-match-outcomes-session"
 import {
+  initializeSession,
+  trackPhaseChange,
+} from "@/lib/xapi-tracking"
+import {
+  initializeXAPISession,
+  trackPhaseEntry,
+} from "@/lib/xapi-session"
+import {
   ChancePage,
   ChaosPage,
   CompetitionActivityPage,
@@ -23,11 +31,35 @@ import {
   ReflectionPage,
   type DemoMatchOutcomes,
 } from "@/sections"
+import { AdminPage } from "@/sections/admin/admin-page"
 
 export default function Home() {
   const [phase, setPhase] = useState<CoursePhase>("intro")
   const [matchOutcomes, setMatchOutcomes] = useState<DemoMatchOutcomes>(() => initialDemoMatchOutcomes())
   const [matchOutcomesSessionReady, setMatchOutcomesSessionReady] = useState(false)
+  const [prevPhase, setPrevPhase] = useState<CoursePhase | null>(null)
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false)
+
+  // Initialize xAPI tracking on mount
+  useEffect(() => {
+    const sessionId = initializeSession()
+    initializeXAPISession(sessionId)
+    trackPhaseEntry("intro")
+  }, [])
+
+  // Track phase changes
+  useEffect(() => {
+    if (prevPhase === null) {
+      setPrevPhase(phase)
+      return
+    }
+
+    if (prevPhase !== phase) {
+      trackPhaseChange(prevPhase, phase)
+      trackPhaseEntry(phase)
+      setPrevPhase(phase)
+    }
+  }, [phase, prevPhase])
 
   useEffect(() => {
     const loaded = loadDemoMatchOutcomesFromSession()
@@ -49,29 +81,32 @@ export default function Home() {
     setPhase("chance")
   }, [])
 
-  const goToMimicry = useCallback((payload?: { answer: string }) => {
+  const goToMimicry = useCallback((payload?: { answer: string; questionNumber: number }) => {
     setMatchOutcomes((o) => ({
       ...o,
+      chanceQuestionNumber: payload?.questionNumber ?? o.chanceQuestionNumber,
       chanceAnswer: payload?.answer ?? o.chanceAnswer,
     }))
     setPhase("mimicry")
   }, [])
 
   const goToChaos = useCallback(
-    (payload?: { hatLabel: string | null; hatImageSrc: string | null }) => {
+    (payload?: { hatLabel: string | null; hatImageSrc: string | null; tomResponse: string | null }) => {
       setMatchOutcomes((o) => ({
         ...o,
         roleplayHatLabel: payload?.hatLabel ?? o.roleplayHatLabel,
         roleplayHatImageSrc: payload?.hatImageSrc ?? o.roleplayHatImageSrc,
+        roleplayTomResponse: payload?.tomResponse ?? o.roleplayTomResponse,
       }))
       setPhase("chaos")
     },
     []
   )
 
-  const goToRecognitionFromChaos = useCallback((payload?: { chaosQ2Skills: readonly string[] }) => {
+  const goToRecognitionFromChaos = useCallback((payload?: { chaosQ1Answer: string | null; chaosQ2Skills: readonly string[] }) => {
     setMatchOutcomes((o) => ({
       ...o,
+      chaosQ1Answer: payload?.chaosQ1Answer ?? o.chaosQ1Answer,
       chaosQ2Skills: payload?.chaosQ2Skills ?? o.chaosQ2Skills,
     }))
     setPhase("recognition")
@@ -103,35 +138,70 @@ export default function Home() {
     setPhase("intro")
   }, [])
 
+  const handleCompetitionReplay = useCallback(() => {
+    setMatchOutcomes((o) => ({
+      ...o,
+      competitionReplayCount: o.competitionReplayCount + 1,
+    }))
+  }, [])
+
+  const handleRecognitionMistake = useCallback(() => {
+    setMatchOutcomes((o) => ({
+      ...o,
+      recognitionMatchMistakes: o.recognitionMatchMistakes + 1,
+    }))
+  }, [])
+
+  const handleRecognitionReflectionUsed = useCallback(() => {
+    setMatchOutcomes((o) => ({
+      ...o,
+      recognitionReflectionUsed: true,
+    }))
+  }, [])
+
   let main: ReactNode
-  if (phase === "intro") {
-    main = <IntroPage onStartCourse={startCourseFromIntro} />
-  } else if (phase === "demoOutline") {
-    main = <DemoOutlinePage onBegin={() => setPhase("competitionActivity")} />
-  } else if (phase === "competitionActivity") {
-    main = <CompetitionActivityPage onNextGame={goToChance} />
-  } else if (phase === "chance") {
-    main = <ChancePage onContinue={goToMimicry} />
-  } else if (phase === "mimicry") {
-    main = <MimicryPage onContinue={goToChaos} />
-  } else if (phase === "chaos") {
-    main = <ChaosPage onContinue={goToRecognitionFromChaos} />
-  } else if (phase === "recognition") {
-    main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToPostRecognition} />
-  } else if (phase === "postRecognition") {
-    main = <PostRecognitionPage onContinue={goToBook} />
-  } else if (phase === "book") {
-    main = <AxisPage onContinue={goToAssessment} />
-  } else if (phase === "axisTogether") {
-    main = <AssessmentPage onContinue={goToReflection} />
-  } else if (phase === "axesAssessment") {
-    main = <AssessmentPage onContinue={goToReflection} />
-  } else if (phase === "reflection") {
-    main = <ReflectionPage onContinue={finishReflection} />
-  } else {
-    const _exhaustive: never = phase
-    void _exhaustive
-    main = null
+  switch (phase) {
+    case "intro":
+      main = <IntroPage onStartCourse={startCourseFromIntro} />
+      break
+    case "demoOutline":
+      main = <DemoOutlinePage onBegin={() => setPhase("competitionActivity")} />
+      break
+    case "competitionActivity":
+      main = <CompetitionActivityPage onNextGame={goToChance} onReplay={handleCompetitionReplay} />
+      break
+    case "chance":
+      main = <ChancePage onContinue={goToMimicry} />
+      break
+    case "mimicry":
+      main = <MimicryPage onContinue={goToChaos} />
+      break
+    case "chaos":
+      main = <ChaosPage onContinue={goToRecognitionFromChaos} />
+      break
+    case "recognition":
+      main = <RecognitionPage outcomes={matchOutcomes} onContinue={goToPostRecognition} onMatchMistake={handleRecognitionMistake} onReflectionUsed={handleRecognitionReflectionUsed} />
+      break
+    case "postRecognition":
+      main = <PostRecognitionPage onContinue={goToBook} />
+      break
+    case "book":
+      main = <AxisPage onContinue={goToAssessment} />
+      break
+    case "axisTogether":
+      main = <AssessmentPage onContinue={goToReflection} />
+      break
+    case "axesAssessment":
+      main = <AssessmentPage onContinue={goToReflection} />
+      break
+    case "reflection":
+      main = <ReflectionPage onContinue={finishReflection} />
+      break
+    default: {
+      const _exhaustive: never = phase
+      void _exhaustive
+      main = null
+    }
   }
 
   return (
@@ -145,7 +215,18 @@ export default function Home() {
       <main id="main-content" className="min-h-screen min-w-0 flex-1">
         {main}
       </main>
-      <CourseNavPanel phase={phase} onNavigate={setPhase} />
+      <CourseNavPanel
+        phase={phase}
+        onNavigate={setPhase}
+        adminPanelOpen={adminPanelOpen}
+        onToggleAdminPanel={() => setAdminPanelOpen(!adminPanelOpen)}
+      />
+      <AdminPage
+        currentPhase={phase}
+        onNavigate={setPhase}
+        isOpen={adminPanelOpen}
+        onClose={() => setAdminPanelOpen(false)}
+      />
     </div>
   )
 }

@@ -7,6 +7,7 @@ import {
     Lightbulb,
     Target,
     PenLine,
+    UserCog,
   } from "lucide-react";
 
   export const icons = {
@@ -18,4 +19,5 @@ import {
     analysis: Lightbulb,
     assessment: Target,
     reflection: PenLine,
+    admin: UserCog,
   }

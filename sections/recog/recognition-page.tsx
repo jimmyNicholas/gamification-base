@@ -45,19 +45,23 @@ function shuffledMatchRevealContentSource(): Record<QuadrantId, QuadrantId> {
 export type RecognitionPageProps = {
   outcomes: DemoMatchOutcomes
   onContinue?: () => void
+  onMatchMistake?: () => void
+  onReflectionUsed?: () => void
 }
 
 /**
  * Recognition — two-column stage: your Match the Four outcomes (shuffled, white tiles) vs grey category tiles.
  * Placed after Chaos, before the quadrants book.
  */
-export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) {
+export function RecognitionPage({ outcomes, onContinue, onMatchMistake, onReflectionUsed }: RecognitionPageProps) {
   const [contentSource] = useState(shuffledMatchRevealContentSource)
   const [selectedOutcomeCell, setSelectedOutcomeCell] = useState<QuadrantId | null>(null)
   const [matchedLeftCells, setMatchedLeftCells] = useState<Set<QuadrantId>>(() => new Set())
   const [matchedRightCells, setMatchedRightCells] = useState<Set<QuadrantId>>(() => new Set())
   /** After all tiles match: first left column is copy + video; Continue swaps to mini-reflection only. */
   const [afterMatchLeft, setAfterMatchLeft] = useState<"copyAndVideo" | "reflection">("copyAndVideo")
+  const [reflectionText, setReflectionText] = useState("")
+  const [reflectionTracked, setReflectionTracked] = useState(false)
   const outcomeCards = useMemo(() => personalizedMatchRevealCards(outcomes), [outcomes])
 
   /** Per-cell content matches `contentSource` so each tile pairs with the correct right category (same as V1 `matchRevealContentSource`). */
@@ -85,16 +89,28 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
       if (selectedOutcomeCell == null) return
       if (matchedLeftCells.has(selectedOutcomeCell)) return
       const expectedCategory = contentSource[selectedOutcomeCell]
-      if (rightCell !== expectedCategory) return
+      if (rightCell !== expectedCategory) {
+        onMatchMistake?.()
+        return
+      }
 
       setMatchedLeftCells((prev) => new Set(prev).add(selectedOutcomeCell))
       setMatchedRightCells((prev) => new Set(prev).add(rightCell))
       setSelectedOutcomeCell(null)
     },
-    [contentSource, matchedLeftCells, selectedOutcomeCell]
+    [contentSource, matchedLeftCells, selectedOutcomeCell, onMatchMistake]
   )
 
   const allMatched = matchedLeftCells.size === 4
+
+  const handleReflectionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value
+    setReflectionText(text)
+    if (!reflectionTracked && text.trim().length > 0) {
+      onReflectionUsed?.()
+      setReflectionTracked(true)
+    }
+  }, [reflectionTracked, onReflectionUsed])
 
   return (
     <RecogLayout>
@@ -176,6 +192,8 @@ export function RecognitionPage({ outcomes, onContinue }: RecognitionPageProps) 
                   id="recognition-mini-reflection"
                   name="recognition-mini-reflection"
                   autoComplete="off"
+                  value={reflectionText}
+                  onChange={handleReflectionChange}
                   className="min-h-[200px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-sm leading-relaxed text-black/90 outline-none placeholder:text-black/55 focus-visible:ring-2 focus-visible:ring-blue-600 sm:min-h-[220px] sm:text-base"
                   placeholder="These notes are just for you. Nothing you write here is saved or assessed. We only record whether you used this space, not what you said. You can type here or skip entirely."
                 />

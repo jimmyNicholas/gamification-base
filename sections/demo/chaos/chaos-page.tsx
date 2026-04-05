@@ -214,8 +214,8 @@ function randomQ2Motion(): { positions: Vec2[]; velocities: Vec2[] } {
 }
 
 export type ChaosPageProps = {
-  /** After Q2 — leaves Chaos for Recognition (carries Q2 skill picks into match outcomes). */
-  onContinue?: (payload?: { chaosQ2Skills: readonly string[] }) => void
+  /** After Q2 — leaves Chaos for Recognition (carries Q1 choice and Q2 skill picks into match outcomes). */
+  onContinue?: (payload?: { chaosQ1Answer: string | null; chaosQ2Skills: readonly string[] }) => void
 }
 
 export function ChaosPage({ onContinue }: ChaosPageProps) {
@@ -460,7 +460,7 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
                       "absolute z-30 w-max max-w-[min(92%,22rem)] min-w-[min(88vw,12rem)] shrink-0"
                     )}
                     onClick={() =>
-                      onContinue?.({ chaosQ2Skills: Array.from(q2Selected).sort() })
+                      onContinue?.({ chaosQ1Answer: q1Choice, chaosQ2Skills: Array.from(q2Selected).sort() })
                     }
                   >
                     Continue

@@ -41,7 +41,7 @@ function pickQuadrant(): ChanceQuadrant {
   return (Math.floor(Math.random() * 4) + 1) as ChanceQuadrant
 }
 
-function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: boolean }) {
+function ChanceWheelSvg({ labelType = "letters" }: { labelType?: "none" | "numbers" | "letters" }) {
   return (
     <svg viewBox="-1 -1 2 2" className="size-full overflow-visible rounded-full" aria-hidden>
       {(
@@ -73,7 +73,7 @@ function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: 
           />
         )
       })}
-      {showQuadrantNumbers
+      {labelType !== "none"
         ? (
             [
               [1, 0],
@@ -81,16 +81,16 @@ function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: 
               [4, 2],
               [3, 3],
             ] as const
-          ).map(([_label, colorIdx]) => {
+          ).map(([numLabel, colorIdx]) => {
             const i = colorIdx
             const letterLabels = ["A", "B", "C", "D"] as const
-            const letter = letterLabels[i]
+            const displayLabel = labelType === "numbers" ? numLabel : letterLabels[i]
             const mid = (180 + i * 90 + 45) * (Math.PI / 180)
             const tx = Math.cos(mid) * 0.55
             const ty = Math.sin(mid) * 0.55
             return (
               <text
-                key={`t-${letter}`}
+                key={`t-${displayLabel}`}
                 x={tx}
                 y={ty}
                 textAnchor="middle"
@@ -98,7 +98,7 @@ function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: 
                 className="fill-white font-bold"
                 style={{ fontSize: 0.28 }}
               >
-                {letter}
+                {displayLabel}
               </text>
             )
           })
@@ -111,11 +111,11 @@ function ChanceWheelSvg({ showQuadrantNumbers = true }: { showQuadrantNumbers?: 
 export function ChanceWheelPreview({
   rotationDeg = 0,
   className,
-  showQuadrantNumbers = true,
+  labelType = "letters",
 }: {
   rotationDeg?: number
   className?: string
-  showQuadrantNumbers?: boolean
+  labelType?: "none" | "numbers" | "letters"
 }) {
   return (
     <div className={cn("relative aspect-square w-full max-w-full", className)} aria-hidden>
@@ -127,7 +127,7 @@ export function ChanceWheelPreview({
         className="relative size-full rounded-full border-2 border-black shadow-sm"
         style={{ transform: `rotate(${rotationDeg}deg)` }}
       >
-        <ChanceWheelSvg showQuadrantNumbers={showQuadrantNumbers} />
+        <ChanceWheelSvg labelType={labelType} />
       </div>
     </div>
   )
@@ -159,8 +159,8 @@ type ChanceWheelProps = {
   onComplete: (quadrant: ChanceQuadrant) => void
   className?: string
   ariaLabel?: string
-  /** When false, wedges show only colors (no 1–4 labels). */
-  showQuadrantNumbers?: boolean
+  /** Label type to show on the wheel: "none", "numbers" (1-4), or "letters" (A-D). */
+  labelType?: "none" | "numbers" | "letters"
 }
 
 export function ChanceWheel({
@@ -168,7 +168,7 @@ export function ChanceWheel({
   onComplete,
   className,
   ariaLabel = "Spin the wheel",
-  showQuadrantNumbers = true,
+  labelType = "letters",
 }: ChanceWheelProps) {
   const [rotation, setRotation] = React.useState(0)
   const [spinning, setSpinning] = React.useState(false)
@@ -229,6 +229,16 @@ export function ChanceWheel({
     requestAnimationFrame(frame)
   }, [disabled, spinning, onComplete])
 
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        startSpin()
+      }
+    },
+    [startSpin]
+  )
+
   return (
     <div
       className={cn(
@@ -247,6 +257,7 @@ export function ChanceWheel({
             type="button"
             disabled={disabled || spinning}
             onClick={startSpin}
+            onKeyDown={handleKeyDown}
             aria-label={ariaLabel}
             className={cn(
               "relative size-full rounded-full border-2 border-black shadow-sm outline-none transition-opacity",
@@ -258,7 +269,7 @@ export function ChanceWheel({
               transform: `rotate(${rotation}deg)`,
             }}
           >
-            <ChanceWheelSvg showQuadrantNumbers={showQuadrantNumbers} />
+            <ChanceWheelSvg labelType={labelType} />
           </button>
         </div>
       </div>

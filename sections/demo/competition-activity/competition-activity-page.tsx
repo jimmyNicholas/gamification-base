@@ -7,13 +7,14 @@ import { CustomTimedMatch } from "./custom-timed-match"
 
 type CompetitionActivityPageProps = {
   onNextGame?: (payload?: { timeMs: number }) => void
+  onReplay?: () => void
 }
 
-export function CompetitionActivityPage({ onNextGame }: CompetitionActivityPageProps) {
+export function CompetitionActivityPage({ onNextGame, onReplay }: CompetitionActivityPageProps) {
   return (
     <DemoStyleLayout mainClassName={DEMO_MAIN_WIDE}>
       <div className="flex w-full flex-col items-stretch">
-        <CustomTimedMatch flatSurface {...ANIMAL_MATCH_DEMO} onNextGame={onNextGame} />
+        <CustomTimedMatch flatSurface {...ANIMAL_MATCH_DEMO} onNextGame={onNextGame} onReplay={onReplay} />
       </div>
     </DemoStyleLayout>
   )

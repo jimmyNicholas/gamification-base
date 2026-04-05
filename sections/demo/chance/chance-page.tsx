@@ -4,7 +4,7 @@ import { CustomChanceEngine } from "@/components/custom-chance-engine"
 import { DemoStyleLayout, DEMO_MAIN_WIDE } from "@/sections/demo/demo-outline-layout"
 
 export type ChancePageProps = {
-  onContinue?: (payload?: { answer: string }) => void
+  onContinue?: (payload?: { answer: string; questionNumber: number }) => void
 }
 
 export function ChancePage({ onContinue }: ChancePageProps) {

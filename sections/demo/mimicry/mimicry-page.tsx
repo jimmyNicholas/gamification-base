@@ -45,7 +45,7 @@ function sceneImageSrc(scene: MimicryScene): string {
 }
 
 export type MimicryPageProps = {
-  onContinue?: (payload?: { hatLabel: string | null; hatImageSrc: string | null }) => void
+  onContinue?: (payload?: { hatLabel: string | null; hatImageSrc: string | null; tomResponse: string | null }) => void
 }
 
 export function MimicryPage({ onContinue }: MimicryPageProps) {
@@ -141,7 +141,7 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
   const onFreeformContinue = () => {
     if (!scene?.freeform || freeformText.trim().length === 0) return
     if (onContinue) {
-      onContinue({ hatLabel: chosenHatLabel, hatImageSrc: chosenHatImageSrc })
+      onContinue({ hatLabel: chosenHatLabel, hatImageSrc: chosenHatImageSrc, tomResponse: freeformText.trim() })
       return
     }
     pickChoice(scene.freeform.nextSceneId)
@@ -421,6 +421,7 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           onContinue({
                             hatLabel: chosenHatLabel,
                             hatImageSrc: chosenHatImageSrc,
+                            tomResponse: null,
                           })
                         }
                       >

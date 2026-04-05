@@ -19,11 +19,14 @@ export type CoursePhase =
   | "axesAssessment"
   | "reflection"
 
+type NavItemId = CoursePhase | "admin"
+
 const NAV_ITEMS: {
-  phase: CoursePhase
+  phase: NavItemId
   label: string
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }[] = [
+  { phase: "admin", label: "Admin", Icon: icons.admin },
   { phase: "intro", label: "Intro", Icon: icons.intro },
   { phase: "demoOutline", label: "Demo", Icon: icons.demoOutline },
   { phase: "recognition", label: "Recognition", Icon: icons.recognition },
@@ -35,9 +38,11 @@ const NAV_ITEMS: {
 type CourseNavPanelProps = {
   phase: CoursePhase
   onNavigate: (phase: CoursePhase) => void
+  adminPanelOpen: boolean
+  onToggleAdminPanel: () => void
 }
 
-export function CourseNavPanel({ phase, onNavigate }: CourseNavPanelProps) {
+export function CourseNavPanel({ phase, onNavigate, adminPanelOpen, onToggleAdminPanel }: CourseNavPanelProps) {
   const [open, setOpen] = useState(true)
 
   return (
@@ -75,19 +80,22 @@ export function CourseNavPanel({ phase, onNavigate }: CourseNavPanelProps) {
           aria-label="Course sections"
         >
           {NAV_ITEMS.map(({ phase: id, label, Icon }) => {
-            const active = phase === id
+            const isAdmin = id === "admin"
+            const active = isAdmin ? adminPanelOpen : phase === id
             return (
               <button
                 key={id}
                 type="button"
-                onClick={() => onNavigate(id)}
+                onClick={() => isAdmin ? onToggleAdminPanel() : onNavigate(id)}
                 title={label}
                 aria-label={label}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-11 w-11 items-center justify-center rounded-md transition-colors",
                   active
-                    ? "bg-black text-white"
+                    ? isAdmin
+                      ? "bg-blue-900 text-white"
+                      : "bg-black text-white"
                     : "text-black/70 hover:bg-black/6 hover:text-black"
                 )}
               >

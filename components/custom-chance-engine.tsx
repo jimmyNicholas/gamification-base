@@ -23,7 +23,7 @@ export type CustomChanceEngineProps = {
   /** @deprecated Ignored; the game uses a fixed 16-card playing deck. */
   cards?: { id: string; label: string }[]
   /** When set, the result-screen Continue button calls this instead of reloading the page. */
-  onContinueAfterResult?: (payload?: { answer: string }) => void
+  onContinueAfterResult?: (payload?: { answer: string; questionNumber: number }) => void
 }
 
 const SLOT_ORDER: ChanceQuadrant[] = [1, 2, 3, 4]
@@ -270,21 +270,36 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
   const letters: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"]
 
   let title = "Choose four cards"
-  if (phase === "spinQuestion") title = "Spin for your question"
-  else if (phase === "questionReveal") title = "Your question"
-  else if (phase === "spinAnswer") title = "Spin for your answer"
-  else if (phase === "result") title = ""
+  let showSpinInstructions = false
+  if (phase === "spinQuestion") {
+    title = "Spin for your question"
+    showSpinInstructions = true
+  } else if (phase === "questionReveal") {
+    title = "Your question"
+  } else if (phase === "spinAnswer") {
+    title = "Spin for your answer"
+    showSpinInstructions = true
+  } else if (phase === "result") {
+    title = ""
+  }
 
   return (
     <section className={cn(demoWideContentClassName, "text-slate-900", className)}>
-      <h2
-        className={cn(
-          "mb-8 text-center font-semibold tracking-tight text-black",
-          phase === "result" ? "mb-10 text-2xl sm:mb-12 sm:text-3xl md:text-4xl" : "text-xl sm:text-2xl"
+      <div className="mb-8 flex flex-col items-center gap-2">
+        <h2
+          className={cn(
+            "text-center font-semibold tracking-tight text-black",
+            phase === "result" ? "mb-10 text-2xl sm:mb-12 sm:text-3xl md:text-4xl" : "text-xl sm:text-2xl"
+          )}
+        >
+          {title}
+        </h2>
+        {showSpinInstructions && (
+          <p className="text-sm text-black/70 text-center">
+            Press Space or Enter to spin
+          </p>
         )}
-      >
-        {title}
-      </h2>
+      </div>
 
       {phase === "picking" ? (
         <div className="flex flex-col items-center justify-center gap-10 pb-2 lg:flex-row lg:items-stretch lg:justify-center lg:gap-16">
@@ -374,6 +389,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
               disabled={false}
               onComplete={onQuestionSpin}
               ariaLabel="Spin for your question"
+              labelType="numbers"
             />
           </div>
         </div>
@@ -419,7 +435,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
                 disabled={false}
                 onComplete={onAnswerSpin}
                 ariaLabel="Spin for your answer"
-                showQuadrantNumbers={false}
+                labelType="letters"
               />
             </div>
           </div>
@@ -442,7 +458,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
                 className={chanceContinueButtonClass}
                 onClick={() =>
                   onContinueAfterResult
-                    ? onContinueAfterResult(selectedChoice ? { answer: selectedChoice } : undefined)
+                    ? onContinueAfterResult(selectedChoice && questionQ ? { answer: selectedChoice, questionNumber: questionQ } : undefined)
                     : window.location.reload()
                 }
               >
