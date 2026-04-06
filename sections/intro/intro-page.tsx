@@ -29,12 +29,16 @@ export const DEFAULT_INTRO_COPY = {
         label: "Name the patterns you already use and when they help.",
       },
       {
-        icon: icons.assessment,
+        icon: icons.analysis,
         label: "Understand why each type works, and when it backfires.",
       },
       {
-        icon: icons.reflection,
+        icon: icons.assessment,
         label: "Read the room on the spot using a simple diagnostic frame.",
+      },
+      {
+        icon: icons.reflection,
+        label: "Reflect on what you've learned and how it can help you in the future.",
       }
     ],
   } satisfies IntroOutline,

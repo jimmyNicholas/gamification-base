@@ -1,15 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { PenLine } from "lucide-react"
 
-import { DemoStyleLayout, DEMO_MAIN_WIDE } from "@/sections/demo/demo-outline-layout"
+import { DemoStyleLayout } from "@/sections/demo/demo-outline-layout"
 import {
-  demoActivityHeadingClassName,
   demoPrimaryCtaConstrainedClassName,
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
-import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 
 export type ReflectionPageProps = {
   onContinue?: () => void
@@ -17,67 +14,15 @@ export type ReflectionPageProps = {
   onReflectionTextUsed?: () => void
 }
 
-type QuadState = "invisible" | "inactive" | "color" | "highlighted"
-type AxisState = "invisible" | "inactiveGrey" | "inactiveColor" | "activeColor"
-
-const QUAD_STATE_OPTIONS: Array<{ value: QuadState; label: string }> = [
-  { value: "invisible", label: "invisible" },
-  { value: "inactive", label: "grey / inactive" },
-  { value: "color", label: "colour" },
-  { value: "highlighted", label: "highlighted" },
+const REFLECTION_PROMPTS = [
+  "Which of the four categories do you currently underutilise, and what would it take to reach for it more often?",
+  "Think about a class you teach regularly. Which axis do you find hardest to read in the moment?",
+  "Which of the four situations felt most familiar? What does that tell you about where you spend most of your teaching energy?",
 ]
-
-function StateRadioGroup({
-  name,
-  value,
-  onChange,
-}: {
-  name: string
-  value: QuadState
-  onChange: (next: QuadState) => void
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      {QUAD_STATE_OPTIONS.map((opt) => (
-        <label key={opt.value} className="flex items-center gap-2 text-xs text-black/70">
-          <input type="radio" name={name} checked={value === opt.value} onChange={() => onChange(opt.value)} />
-          {opt.label}
-        </label>
-      ))}
-    </div>
-  )
-}
-
-const AXIS_STATE_OPTIONS: Array<{ value: AxisState; label: string }> = [
-  { value: "invisible", label: "invisible" },
-  { value: "inactiveGrey", label: "inactive grey" },
-  { value: "inactiveColor", label: "inactive colour" },
-  { value: "activeColor", label: "active colour" },
-]
-
-function AxisStateRadioGroup({
-  name,
-  value,
-  onChange,
-}: {
-  name: string
-  value: AxisState
-  onChange: (next: AxisState) => void
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      {AXIS_STATE_OPTIONS.map((opt) => (
-        <label key={opt.value} className="flex items-center gap-2 text-xs text-black/70">
-          <input type="radio" name={name} checked={value === opt.value} onChange={() => onChange(opt.value)} />
-          {opt.label}
-        </label>
-      ))}
-    </div>
-  )
-}
 
 export function ReflectionPage({ onContinue, onReflectionTextUsed }: ReflectionPageProps) {
   const [reflectionTracked, setReflectionTracked] = React.useState(false)
+  const [canContinue, setCanContinue] = React.useState(false)
 
   const handleReflectionChange = React.useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -90,54 +35,64 @@ export function ReflectionPage({ onContinue, onReflectionTextUsed }: ReflectionP
     [reflectionTracked, onReflectionTextUsed]
   )
 
-  const [quadrantStates, setQuadrantStates] = React.useState<Record<QuadrantId, QuadState>>({
-    Q1: "inactive",
-    Q2: "inactive",
-    Q3: "inactive",
-    Q4: "inactive",
-  })
-
-  const [axisStates, setAxisStates] = React.useState<{ horizontal: AxisState; vertical: AxisState }>({
-    horizontal: "invisible",
-    vertical: "invisible",
-  })
-
-  const [axisLabelMode, setAxisLabelMode] = React.useState<"labeled" | "unlabeled">("unlabeled")
-  const [axisPosition, setAxisPosition] = React.useState<{ horizontal: 0 | 1 | 2 | 3 | 4; vertical: 0 | 1 | 2 | 3 | 4 }>({
-    horizontal: 2,
-    vertical: 2,
-  })
-
-  const cycleState = React.useCallback((s: AxisState): AxisState => {
-    if (s === "invisible") return "inactiveGrey"
-    if (s === "inactiveGrey") return "inactiveColor"
-    if (s === "inactiveColor") return "activeColor"
-    return "invisible"
+  // Enable continue button after 5 seconds
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setCanContinue(true)
+    }, 5000)
+    return () => clearTimeout(timer)
   }, [])
 
   return (
-    <DemoStyleLayout mainClassName={DEMO_MAIN_WIDE} dataActivity="reflection">
-      <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
-        <div className="flex min-w-0 flex-1 flex-col gap-4 text-left">
-          <div className="flex items-center gap-3">
-            <PenLine className="size-6 text-black/70" aria-hidden />
-            <h2 id="reflection-heading" className={demoActivityHeadingClassName}>Reflection</h2>
+    <DemoStyleLayout dataActivity="reflection">
+      <div className="flex max-h-screen w-full max-w-7xl flex-col items-center justify-center gap-8 px-6 py-12 sm:py-16">
+        {/* Heading */}
+        <h1 className="text-center text-2xl font-bold leading-tight text-black sm:text-3xl md:text-4xl lg:text-5xl">
+          Take it to your classroom.
+        </h1>
+
+        {/* Two column layout */}
+        <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-center lg:gap-12 xl:gap-16 bg-white/70 p-4 rounded-xl">
+          {/* Left: Prompts */}
+          <div className="flex w-full flex-col gap-6 sm:gap-8 lg:flex-1">
+            {REFLECTION_PROMPTS.map((prompt, index) => (
+              <p key={index} className="text-left text-base leading-relaxed text-black/90 sm:text-lg md:text-xl lg:text-lg xl:text-xl">
+                {prompt}
+              </p>
+            ))}
           </div>
-          <textarea
-            aria-labelledby="reflection-heading"
-            className="min-h-[220px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-black/90 outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-            placeholder=""
-            onChange={handleReflectionChange}
-          />
-          {onContinue ? (
-            <button
-              type="button"
-              className={`${demoPrimaryCtaConstrainedClassName} ${demoPrimaryCtaNativeFocusClassName} max-w-lg`}
-              onClick={() => onContinue()}
-            >
-              Continue
-            </button>
-          ) : null}
+
+          {/* Right: Instruction, Textarea, Button */}
+          <div className="flex w-full flex-col gap-6 lg:flex-1">
+            {/* Instruction */}
+            <p className="text-center text-sm leading-relaxed text-black/70 sm:text-base lg:text-left">
+              There is no right answer. This is for you. You can type here or just sit with the question.
+            </p>
+
+            {/* Textarea */}
+            <textarea
+              aria-label="Reflection space"
+              className="min-h-[160px] w-full resize-y rounded-xl border border-black/10 bg-white/60 p-4 text-sm text-black/90 outline-none placeholder:text-black/30 focus-visible:ring-2 focus-visible:ring-blue-600 sm:min-h-[200px] sm:p-5 sm:text-base lg:min-h-[240px]"
+              placeholder="These notes are just for you. Nothing you write here is saved or assessed. We only record whether you used this space, not what you said. You can type here or skip entirely."
+              onChange={handleReflectionChange}
+            />
+
+            {/* Continue button */}
+            {onContinue ? (
+              <button
+                type="button"
+                className={`${demoPrimaryCtaConstrainedClassName} ${demoPrimaryCtaNativeFocusClassName} mx-auto lg:mx-0`}
+                onClick={() => onContinue()}
+                disabled={!canContinue}
+                style={{
+                  opacity: canContinue ? 1 : 0.5,
+                  cursor: canContinue ? "pointer" : "not-allowed",
+                }}
+              >
+                Continue
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </DemoStyleLayout>

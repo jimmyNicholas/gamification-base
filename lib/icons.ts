@@ -4,10 +4,11 @@ import {
     ChevronRight,
     Dices,
     Grid2X2,
-    Move, 
+    Move,
     Target,
     PenLine,
     UserCog,
+    BookMarked,
   } from "lucide-react";
 
   export const icons = {
@@ -19,5 +20,6 @@ import {
     analysis: Move,
     assessment: Target,
     reflection: PenLine,
+    references: BookMarked,
     admin: UserCog,
   }

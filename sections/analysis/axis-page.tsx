@@ -576,13 +576,16 @@ export function AxisPage({
               {leftColumn}
               {progressLabel ? <p className="text-xs text-black/55">{progressLabel}</p> : null}
             </div>
-
-            {primaryCta ? (
-              <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">{primaryCta}</div>
-            ) : null}
           </div>
         }
-        rightContent={<div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>}
+        rightContent={
+        <>
+          <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
+          {primaryCta ? (
+              <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">{primaryCta}</div>
+            ) : null}
+        </>
+         }
       />
     </ReflectionLayout>
   )

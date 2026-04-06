@@ -20,6 +20,7 @@ export type CoursePhase =
   | "axisTogether"
   | "axesAssessment"
   | "reflection"
+  | "references"
 
 /** Phases that belong to the Recognition side-rail section (single icon). */
 export function isRecognitionSectionPhase(phase: CoursePhase): boolean {
@@ -44,6 +45,7 @@ const NAV_ITEMS: {
   { phase: "book", label: "Analysis", Icon: icons.analysis },
   { phase: "axisTogether", label: "Assessment", Icon: icons.assessment },
   { phase: "reflection", label: "Reflection", Icon: icons.reflection },
+  { phase: "references", label: "References", Icon: icons.references },
 ]
 
 type CourseNavPanelProps = {

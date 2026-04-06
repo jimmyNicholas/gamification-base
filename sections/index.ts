@@ -59,6 +59,8 @@ export {
 
 export { ReflectionPage, type ReflectionPageProps } from "@/sections/reflection/reflection-page"
 
+export { ReferencesPage, type ReferencesPageProps } from "@/sections/references/references-page"
+
 export {
   initialDemoMatchOutcomes,
   type AssessmentSituationResult,

@@ -56,6 +56,7 @@ export function AdminPage({ currentPhase, onNavigate, isOpen, onClose }: AdminPa
                 <AdminNavigation
                   currentPhase={currentPhase}
                   onNavigate={onNavigate}
+                  onClose={onClose}
                 />
               </div>
 

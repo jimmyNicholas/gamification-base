@@ -13,6 +13,7 @@ import { QUADRANT_PLAY_CATEGORY_TILES } from "@/sections/demo/quadrants-axes/qua
 import { ReflectionLayout } from "@/sections/reflection/reflection-layout"
 import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLayout"
 import { cn } from "@/lib/utils"
+import { ChevronDown, ChevronRight } from "lucide-react"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 
 const ASSESSMENT_INTRO_SURFACE = "#fce7f3"
@@ -165,6 +166,7 @@ export function AssessmentPage({
   const [horizontalIndex, setHorizontalIndex] = React.useState<AxisIndex>(AXIS_CENTER)
   const [verticalIndex, setVerticalIndex] = React.useState<AxisIndex>(AXIS_CENTER)
   const [submitted, setSubmitted] = React.useState(false)
+  const [situationPanelOpen, setSituationPanelOpen] = React.useState(false)
 
   React.useEffect(() => { setStep(initialStep) }, [initialStep])
   React.useEffect(() => { onStepChange?.(step) }, [step, onStepChange])
@@ -174,6 +176,7 @@ export function AssessmentPage({
     setHorizontalIndex(AXIS_CENTER)
     setVerticalIndex(AXIS_CENTER)
     setSubmitted(false)
+    setSituationPanelOpen(false)
   }, [step])
 
   const slot = situationSlot(step)
@@ -242,19 +245,54 @@ export function AssessmentPage({
       )
     }
     if (isSituationStep(step) && currentSituation) {
+      const situationCardBody = (
+        <>
+          <h3 className="text-lg font-bold text-black">{currentSituation.heading}</h3>
+          <p className="mt-1 text-sm text-black/70">
+            {currentSituation.level} · {currentSituation.topic}
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-black/85">{currentSituation.situation}</p>
+        </>
+      )
+
       return (
         <>
-          <h2 className="text-left text-xl font-bold leading-snug">
-            Read the situation. Place your answer on the grid.
-          </h2>
-          <div className="rounded-xl border border-black/10 bg-white/40 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-black/55">Situation</p>
-            <h3 className="mt-1 text-lg font-bold text-black">{currentSituation.heading}</h3>
-            <p className="mt-1 text-sm text-black/70">
-              {currentSituation.level} · {currentSituation.topic}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-black/85">{currentSituation.situation}</p>
-          </div>
+          {!submitted ? (
+            <h2 className="text-left text-xl font-bold leading-snug">
+              Read the situation. Place your answer on the grid.
+            </h2>
+          ) : null}
+
+          {!submitted ? (
+            <div className="rounded-xl border border-black/10 bg-white/40 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-black/55">Situation</p>
+              <div className="mt-1">{situationCardBody}</div>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-black/10 bg-white/40">
+              <button
+                type="button"
+                onClick={() => setSituationPanelOpen((o) => !o)}
+                className="flex w-full items-start justify-between gap-3 p-4 text-left transition-colors hover:bg-black/3"
+                aria-expanded={situationPanelOpen}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-black/55">Situation</p>
+                  {!situationPanelOpen ? (
+                    <p className="mt-1 line-clamp-2 text-base font-bold text-black">{currentSituation.heading}</p>
+                  ) : null}
+                </div>
+                {situationPanelOpen ? (
+                  <ChevronDown className="mt-0.5 h-5 w-5 shrink-0 text-black/55" aria-hidden />
+                ) : (
+                  <ChevronRight className="mt-0.5 h-5 w-5 shrink-0 text-black/55" aria-hidden />
+                )}
+              </button>
+              {situationPanelOpen ? (
+                <div className="border-t border-black/10 px-4 pb-4 pt-1">{situationCardBody}</div>
+              ) : null}
+            </div>
+          )}
 
           {/* Consequence — only visible after submit, but updates live as axes move */}
           {submitted ? (
@@ -382,15 +420,19 @@ export function AssessmentPage({
                 <p className="text-xs text-black/55">{progressLabel}</p>
               )}
             </div>
-            {primaryCta && (
-              <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">
-                {primaryCta}
-              </div>
-            )}
+            
           </div>
         }
         rightContent={
+          <>
           <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
+          {primaryCta && (
+            <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">
+              {primaryCta}
+            </div>
+            
+          )}
+          </>
         }
       />
     </ReflectionLayout>

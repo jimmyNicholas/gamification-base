@@ -123,10 +123,10 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
       <TwoColumnActivityStageLayout
         reserveTopTitleSpace={true}
         leftVerticalAlign="start"
-        contentClassName={cn(demoWideContentClassName, "relative px-0 py-2 sm:py-3 md:py-4 gap-10 xl:gap-12")}
+        contentClassName={cn(demoWideContentClassName, "relative px-0 py-2 sm:py-3 md:py-4 gap-10 xl:gap-12 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2")}
         leftContent={
-          <div className="flex min-h-[min(52vh,420px)] w-full min-w-0 flex-col gap-4 self-stretch sm:gap-5 lg:min-h-0 lg:h-full px-10">
-            <div className="flex min-w-0 flex-col items-start gap-4 sm:gap-5">
+          <div className="flex mx-auto w-full max-w-[min(100%,400px)] items-center justify-center min-w-0 flex-col gap-4 self-stretch sm:gap-5 lg:min-h-0 lg:h-full">
+            <div className="flex min-w-0 flex-col items-center gap-4 sm:gap-5">
               <h2 className="text-left text-xl font-bold leading-snug sm:text-2xl">
                 Let&apos;s look at some definitions and examples
               </h2>
@@ -175,6 +175,12 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
             ) : null}
 
             {onContinue && remainingActivities.length === 0 ? (
+              <>
+              <div>
+                <h3 className="text-left text-lg p-2 leading-snug sm:text-xl border border-black pb-2 bg-white/70 p-2 rounded-xl">
+                All activities are placed. You can revisit the game categories anytime to reread definitions, or continue to the next section.
+                </h3>
+              </div>
               <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">
                 <button
                   type="button"
@@ -184,6 +190,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
                   Continue
                 </button>
               </div>
+              </>
             ) : null}
           </div>
         }
@@ -191,6 +198,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
           <div className="flex w-full min-w-0 justify-center">
             <QuadrantAxesModelV2
               mode="flipCard"
+              className="scale-100 md:scale-90 md:pt-0"
               cards={FLIP_CARDS}
               cardFlipped={Object.fromEntries(Object.entries(cardFlipped).map(([q, flipped]) => [q, flipped ?? false])) as Partial<Record<QuadrantId, boolean>>}
               onCardFlip={onBookFlipToggle}

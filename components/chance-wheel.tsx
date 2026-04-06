@@ -229,6 +229,25 @@ export function ChanceWheel({
     requestAnimationFrame(frame)
   }, [disabled, spinning, onComplete])
 
+  // Global keyboard listener for Space/Enter when wheel is ready to spin
+  React.useEffect(() => {
+    if (disabled || spinning) return
+
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        // Only trigger if not typing in an input/textarea
+        const target = event.target as HTMLElement
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
+
+        event.preventDefault()
+        startSpin()
+      }
+    }
+
+    window.addEventListener("keydown", handleGlobalKeyDown)
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown)
+  }, [disabled, spinning, startSpin])
+
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
       if (event.key === "Enter" || event.key === " ") {

@@ -33,6 +33,7 @@ import {
   AxisPage,
   AssessmentPage,
   ReflectionPage,
+  ReferencesPage,
   type AxisQuizStep,
   type DemoMatchOutcomes,
 } from "@/sections"
@@ -155,7 +156,11 @@ export default function Home() {
     setPhase("reflection")
   }, [])
 
-  const finishReflection = useCallback(() => {
+  const goToReferences = useCallback(() => {
+    setPhase("references")
+  }, [])
+
+  const finishReferences = useCallback(() => {
     setPhase("intro")
   }, [])
 
@@ -288,8 +293,11 @@ export default function Home() {
       break
     case "reflection":
       main = (
-        <ReflectionPage onContinue={finishReflection} onReflectionTextUsed={handleFinalReflectionTextUsed} />
+        <ReflectionPage onContinue={goToReferences} onReflectionTextUsed={handleFinalReflectionTextUsed} />
       )
+      break
+    case "references":
+      main = <ReferencesPage onContinue={finishReferences} />
       break
     default: {
       const _exhaustive: never = phase

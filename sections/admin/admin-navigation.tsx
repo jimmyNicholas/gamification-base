@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 type AdminNavigationProps = {
   currentPhase: CoursePhase
   onNavigate: (phase: CoursePhase) => void
+  onClose: () => void
 }
 
 type NavSection = {
@@ -39,13 +40,13 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Analysis",
     phases: [
-      { phase: "book", label: "Intro" },
+      { phase: "book", label: "Analysis" },
     ],
   },
   {
     title: "Assessment",
     phases: [
-      { phase: "axisTogether", label: "Analysis" },
+      { phase: "axisTogether", label: "Assessment" },
       //{ phase: "axesAssessment", label: "Situations 1-4" },
       // Note: Assessment feedback phase to be added
     ],
@@ -62,6 +63,7 @@ const NAV_SECTIONS: NavSection[] = [
 export function AdminNavigation({
   currentPhase,
   onNavigate,
+  onClose,
 }: AdminNavigationProps) {
   return (
     <div className="flex h-full flex-col gap-6 overflow-y-auto">
@@ -85,7 +87,10 @@ export function AdminNavigation({
                   <button
                     key={phase}
                     type="button"
-                    onClick={() => onNavigate(phase)}
+                    onClick={() => {
+                      onNavigate(phase)
+                      onClose()
+                    }}
                     className={cn(
                       "rounded-md px-3 py-2 text-left text-sm font-medium transition-colors",
                       isActive
