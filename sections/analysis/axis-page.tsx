@@ -11,6 +11,8 @@ import {
 import { cn } from "@/lib/utils"
 import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLayout"
 import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardHints } from "@/components/keyboard-hints"
 
 export type AxisPageStep =
   | "quizIntro"
@@ -137,7 +139,7 @@ export function AxisPage({
     setQuizFeedback((f) => (f && !f.correct ? null : f))
   }, [horizontalIndex, verticalIndex])
 
-  const submitAgency = (correctSide: "left" | "right") => {
+  const submitAgency = React.useCallback((correctSide: "left" | "right") => {
     const side = horizontalSide(horizontalIndex)
     if (!side) return
     const choiceLabel = side === "left" ? "Agency" : "Fate"
@@ -145,9 +147,9 @@ export function AxisPage({
       onAxisQuizSubmit?.({ step, choiceLabel })
     }
     setQuizFeedback({ correct: side === correctSide })
-  }
+  }, [horizontalIndex, step, onAxisQuizSubmit])
 
-  const submitSelf = (correctSide: "top" | "bottom") => {
+  const submitSelf = React.useCallback((correctSide: "top" | "bottom") => {
     const side = verticalSide(verticalIndex)
     if (!side) return
     const choiceLabel = side === "top" ? "Self-intact" : "Self-dissolved"
@@ -155,10 +157,34 @@ export function AxisPage({
       onAxisQuizSubmit?.({ step, choiceLabel })
     }
     setQuizFeedback({ correct: side === correctSide })
-  }
+  }, [verticalIndex, step, onAxisQuizSubmit])
 
   const canSubmitAgency = !axesLocked && horizontalSide(horizontalIndex) !== null
   const canSubmitSelf = !axesLocked && verticalSide(verticalIndex) !== null
+
+  // Keyboard navigation support
+  const handleSubmit = React.useCallback(() => {
+    if (isAgencyQuiz && canSubmitAgency) {
+      const correctSide = step === "agencyQ1" ? AGENCY_Q1.correct : AGENCY_Q2.correct
+      submitAgency(correctSide)
+    } else if (isSelfQuiz && canSubmitSelf) {
+      const correctSide = step === "selfQ1" ? SELF_Q1.correct : SELF_Q2.correct
+      submitSelf(correctSide)
+    } else {
+      // For intro screens or when feedback is shown, click the active button
+      const button = document.querySelector('button[type="button"]') as HTMLButtonElement
+      button?.click()
+    }
+  }, [step, isAgencyQuiz, isSelfQuiz, canSubmitAgency, canSubmitSelf, submitAgency, submitSelf])
+
+  useKeyboardNavigation({
+    onHorizontalChange: isAgencyQuiz ? onHChange : undefined,
+    onVerticalChange: isSelfQuiz ? onVChange : undefined,
+    onSubmit: handleSubmit,
+    horizontalIndex,
+    verticalIndex,
+    disabled: axesLocked,
+  })
 
   const model = (() => {
     switch (step) {
@@ -582,7 +608,19 @@ export function AxisPage({
         <>
           <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
           {primaryCta ? (
-              <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">{primaryCta}</div>
+              <div className="mt-auto flex w-full flex-col items-center gap-3 pt-2 sm:pt-4">
+                <KeyboardHints
+                  showAxisHints={isAgencyQuiz || isSelfQuiz}
+                  showSubmitHint={true}
+                  submitLabel={
+                    quizFeedback
+                      ? (quizFeedback.correct ? "continue" : "try again")
+                      : (canSubmitAgency || canSubmitSelf ? "submit" : "continue")
+                  }
+                  className="mb-1"
+                />
+                {primaryCta}
+              </div>
             ) : null}
         </>
          }

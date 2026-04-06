@@ -7,6 +7,7 @@ import {
   demoPrimaryCtaConstrainedClassName,
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 
 export type ReflectionPageProps = {
   onContinue?: () => void
@@ -42,6 +43,11 @@ export function ReflectionPage({ onContinue, onReflectionTextUsed }: ReflectionP
     }, 5000)
     return () => clearTimeout(timer)
   }, [])
+
+  // Enable Enter/Spacebar to continue (only when button is enabled and onContinue exists)
+  useKeyboardNavigation({
+    onSubmit: canContinue && onContinue ? onContinue : undefined,
+  })
 
   return (
     <DemoStyleLayout dataActivity="reflection">

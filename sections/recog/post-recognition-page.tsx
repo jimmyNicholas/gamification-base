@@ -16,6 +16,7 @@ import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLa
 import { cn } from "@/lib/utils"
 import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
 import { useMemo } from "react"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 
 const ALL_QUADRANTS: QuadrantId[] = ["Q1", "Q2", "Q3", "Q4"]
 
@@ -117,6 +118,11 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
     const ordered = dragActivityOrder ?? BOOK_DRAG_ACTIVITIES
     return ordered.filter((a) => placedActivityById[a.id] == null)
   }, [placedActivityById, dragActivityOrder])
+
+  // Enable Enter/Spacebar to continue (only when all activities are placed)
+  useKeyboardNavigation({
+    onSubmit: remainingActivities.length === 0 && onContinue ? onContinue : undefined,
+  })
 
   return (
     <RecogLayout dataActivity="postRecognition">

@@ -15,6 +15,8 @@ import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLa
 import { cn } from "@/lib/utils"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardHints } from "@/components/keyboard-hints"
 
 const ASSESSMENT_INTRO_SURFACE = "#fce7f3"
 
@@ -189,14 +191,46 @@ export function AssessmentPage({
 
   const canSubmit = !submitted && horizontalIndex !== AXIS_CENTER && verticalIndex !== AXIS_CENTER
 
-  const advance = () => {
+  const advance = React.useCallback(() => {
     const next = nextStep(step)
     if (next === "wrapup") {
       onContinue?.()
     } else {
       setStep(next)
     }
-  }
+  }, [step, onContinue])
+
+  const handleSubmit = React.useCallback(() => {
+    if (step === "intro") {
+      // On intro screen, just advance
+      advance()
+    } else if (isSituationStep(step)) {
+      if (canSubmit) {
+        // Submit the answer
+        setSubmitted(true)
+        if (currentSituation && liveQuadrant) {
+          onAssessmentSituationSubmit?.({
+            slotIndex: slot,
+            chosen: liveQuadrant,
+            ideal: currentSituation.idealQuadrant,
+          })
+        }
+      } else if (submitted) {
+        // Already submitted, so advance
+        advance()
+      }
+    }
+  }, [step, canSubmit, submitted, currentSituation, liveQuadrant, slot, onAssessmentSituationSubmit, advance])
+
+  // Keyboard navigation support
+  useKeyboardNavigation({
+    onHorizontalChange: isSituationStep(step) && !submitted ? setHorizontalIndex : undefined,
+    onVerticalChange: isSituationStep(step) && !submitted ? setVerticalIndex : undefined,
+    onSubmit: handleSubmit,
+    horizontalIndex,
+    verticalIndex,
+    disabled: false,
+  })
 
   // --- Model ---
   const model = (() => {
@@ -427,10 +461,22 @@ export function AssessmentPage({
           <>
           <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
           {primaryCta && (
-            <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">
+            <div className="mt-auto flex w-full flex-col items-center gap-3 pt-2 sm:pt-4">
+              <KeyboardHints
+                showAxisHints={isSituationStep(step) && !submitted}
+                showSubmitHint={true}
+                submitLabel={
+                  step === "intro"
+                    ? "continue"
+                    : submitted
+                      ? (step === "situation4" ? "finish" : "next")
+                      : "submit"
+                }
+                className="mb-1"
+              />
               {primaryCta}
             </div>
-            
+
           )}
           </>
         }

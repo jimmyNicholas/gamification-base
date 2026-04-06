@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { icons } from "@/lib/icons"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 
 export type IntroOutline = {
   objective: string
@@ -62,6 +63,11 @@ export function IntroPage({
   className,
 }: IntroPageProps) {
   const listHeading = outline.listHeading ?? "Here's what you'll do:"
+
+  // Enable Enter/Spacebar to start course
+  useKeyboardNavigation({
+    onSubmit: onStartCourse,
+  })
 
   return (
     <main className={cn("relative h-dvh overflow-hidden", className)}>

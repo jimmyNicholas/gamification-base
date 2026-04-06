@@ -7,6 +7,7 @@ import {
   demoPrimaryCtaConstrainedClassName,
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 
 export type ReferencesPageProps = {
   onContinue?: () => void
@@ -75,6 +76,11 @@ const ADOBE_IMAGES = [
 ]
 
 export function ReferencesPage({ onContinue }: ReferencesPageProps) {
+  // Enable Enter/Spacebar to continue
+  useKeyboardNavigation({
+    onSubmit: onContinue,
+  })
+
   return (
     <DemoStyleLayout dataActivity="references">
       <div className="flex max-h-screen w-full max-w-7xl flex-col items-start gap-8 px-6 py-12 sm:py-16 overflow-y-auto">

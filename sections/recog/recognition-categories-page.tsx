@@ -6,6 +6,7 @@ import {
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
 import { cn } from "@/lib/utils"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 
 export type RecognitionCategoriesPageProps = {
   onContinue?: () => void
@@ -13,6 +14,11 @@ export type RecognitionCategoriesPageProps = {
 
 /** Caillois context + TikTok embed after Match the Four. */
 export function RecognitionCategoriesPage({ onContinue }: RecognitionCategoriesPageProps) {
+  // Enable Enter/Spacebar to continue
+  useKeyboardNavigation({
+    onSubmit: onContinue,
+  })
+
   return (
     <RecogLayout dataActivity="recognition-categories">
       <div className="flex w-full min-w-0 flex-col px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">

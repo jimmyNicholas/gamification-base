@@ -8,6 +8,7 @@ import {
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
 import { cn } from "@/lib/utils"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 
 export type RecognitionReflectionPageProps = {
   onContinue?: () => void
@@ -18,6 +19,11 @@ export type RecognitionReflectionPageProps = {
 export function RecognitionReflectionPage({ onContinue, onReflectionUsed }: RecognitionReflectionPageProps) {
   const [reflectionText, setReflectionText] = useState("")
   const [reflectionTracked, setReflectionTracked] = useState(false)
+
+  // Enable Enter/Spacebar to continue (when not focused in textarea)
+  useKeyboardNavigation({
+    onSubmit: onContinue,
+  })
 
   const handleReflectionChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
