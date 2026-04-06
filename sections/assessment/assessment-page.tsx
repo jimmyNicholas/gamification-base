@@ -17,6 +17,7 @@ import { ChevronDown, ChevronRight } from "lucide-react"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 import { KeyboardHints } from "@/components/keyboard-hints"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 const ASSESSMENT_INTRO_SURFACE = "#fce7f3"
 
@@ -222,10 +223,10 @@ export function AssessmentPage({
     }
   }, [step, canSubmit, submitted, currentSituation, liveQuadrant, slot, onAssessmentSituationSubmit, advance])
 
-  // Keyboard navigation support
+  // Keyboard navigation support - allow axis navigation even after submit
   useKeyboardNavigation({
-    onHorizontalChange: isSituationStep(step) && !submitted ? setHorizontalIndex : undefined,
-    onVerticalChange: isSituationStep(step) && !submitted ? setVerticalIndex : undefined,
+    onHorizontalChange: isSituationStep(step) ? setHorizontalIndex : undefined,
+    onVerticalChange: isSituationStep(step) ? setVerticalIndex : undefined,
     onSubmit: handleSubmit,
     horizontalIndex,
     verticalIndex,
@@ -393,7 +394,7 @@ export function AssessmentPage({
           className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
           onClick={advance}
         >
-          Continue
+          Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
         </button>
       )
     }
@@ -420,7 +421,7 @@ export function AssessmentPage({
               setSubmitted(true)
             }}
           >
-            This is my read of the situation.
+            This is my read of the situation. <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       }
@@ -430,7 +431,7 @@ export function AssessmentPage({
           className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
           onClick={advance}
         >
-          {step === "situation4" ? "Finish" : "Next situation"}
+          {step === "situation4" ? "Finish" : "Next situation"} <KeyboardKey keyLabel="ENTER" className="ml-2" />
         </button>
       )
     }
@@ -463,15 +464,7 @@ export function AssessmentPage({
           {primaryCta && (
             <div className="mt-auto flex w-full flex-col items-center gap-3 pt-2 sm:pt-4">
               <KeyboardHints
-                showAxisHints={isSituationStep(step) && !submitted}
-                showSubmitHint={true}
-                submitLabel={
-                  step === "intro"
-                    ? "continue"
-                    : submitted
-                      ? (step === "situation4" ? "finish" : "next")
-                      : "submit"
-                }
+                axisMode={isSituationStep(step) && !submitted ? "both" : "none"}
                 className="mb-1"
               />
               {primaryCta}

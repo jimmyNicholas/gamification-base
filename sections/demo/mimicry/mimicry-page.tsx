@@ -16,6 +16,8 @@ import {
 import { MimicryLayout } from "@/sections/demo/mimicry/mimicry-layout"
 import { getBackgroundById } from "@/sections/demo/mimicry/mimicry-assets"
 import { getSceneById, type MimicryScene, type MimicrySceneId } from "@/sections/demo/mimicry/mimicry-scenario"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 const BG_MS = 400
 const FG_DELAY_MS = 200
@@ -112,12 +114,12 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
     return () => window.clearTimeout(t)
   }, [outgoingSrc, outgoingFadeOut])
 
-  const goNextLine = () => {
+  const goNextLine = React.useCallback(() => {
     if (!scene) return
     if (lineIndex < lines.length - 1) setLineIndex((i) => i + 1)
-  }
+  }, [scene, lineIndex, lines.length])
 
-  const pickChoice = (nextId: string, choiceLabel?: string, choiceImageSrc?: string) => {
+  const pickChoice = React.useCallback((nextId: string, choiceLabel?: string, choiceImageSrc?: string) => {
     if (nextId === "hatAffirmation") {
       setChosenHatLabel(choiceLabel ?? null)
       setChosenHatImageSrc(choiceImageSrc ?? null)
@@ -125,9 +127,9 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
     setSceneId(nextId as MimicrySceneId)
     setLineIndex(0)
     setFreeformText("")
-  }
+  }, [])
 
-  const onLastLineContinue = () => {
+  const onLastLineContinue = React.useCallback(() => {
     if (!scene) return
     if (scene.continueToSceneId) {
       setSceneId(scene.continueToSceneId as MimicrySceneId)
@@ -136,16 +138,16 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
       return
     }
     setLineIndex(lines.length)
-  }
+  }, [scene, lines.length])
 
-  const onFreeformContinue = () => {
+  const onFreeformContinue = React.useCallback(() => {
     if (!scene?.freeform || freeformText.trim().length === 0) return
     if (onContinue) {
       onContinue({ hatLabel: chosenHatLabel, hatImageSrc: chosenHatImageSrc, tomResponse: freeformText.trim() })
       return
     }
     pickChoice(scene.freeform.nextSceneId)
-  }
+  }, [scene, freeformText, onContinue, chosenHatLabel, chosenHatImageSrc, pickChoice])
 
   React.useEffect(() => {
     setFreeformText("")
@@ -157,6 +159,78 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
       setChosenHatImageSrc(null)
     }
   }, [sceneId])
+
+  // Enable Enter/Spacebar for Continue buttons
+  const shouldEnableEnter =
+    (!atLineEnd && lineIndex < lines.length - 1) ||
+    (!atLineEnd && lineIndex === lines.length - 1 && lines.length > 0 && !atChoice && interaction !== "freeform") ||
+    (atFreeform && canSubmitFreeform) ||
+    (scene?.id === "complete" && atChoice && onContinue)
+
+  const handleEnterKey = React.useCallback(() => {
+    if (!scene) return
+
+    // Handle freeform continue
+    if (atFreeform && scene.freeform && canSubmitFreeform) {
+      onFreeformContinue()
+      return
+    }
+
+    // Handle complete screen continue
+    if (scene.id === "complete" && atChoice && onContinue) {
+      onContinue({
+        hatLabel: chosenHatLabel,
+        hatImageSrc: chosenHatImageSrc,
+        tomResponse: null,
+      })
+      return
+    }
+
+    // Handle next line
+    if (!atLineEnd && lineIndex < lines.length - 1) {
+      goNextLine()
+      return
+    }
+
+    // Handle last line continue
+    if (!atLineEnd && lineIndex === lines.length - 1 && lines.length > 0 && !atChoice && interaction !== "freeform") {
+      onLastLineContinue()
+      return
+    }
+  }, [scene, atFreeform, canSubmitFreeform, atLineEnd, lineIndex, lines.length, atChoice, interaction, onContinue, chosenHatLabel, chosenHatImageSrc, onFreeformContinue, goNextLine, onLastLineContinue])
+
+  useKeyboardNavigation({
+    onSubmit: shouldEnableEnter ? handleEnterKey : undefined,
+  })
+
+  // Keyboard controls for hat selection (1, 2, 3)
+  React.useEffect(() => {
+    if (!scene || !atChoice) return
+
+    // Only add hat selection keyboard if there are hat choices (imageSrc present)
+    const hatChoices = scene.choices.filter((c) => c.imageSrc)
+    if (hatChoices.length === 0) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) return
+
+      const key = event.key
+      if (key === '1' && hatChoices[0]) {
+        event.preventDefault()
+        pickChoice(hatChoices[0].nextSceneId, hatChoices[0].label, hatChoices[0].imageSrc)
+      } else if (key === '2' && hatChoices[1]) {
+        event.preventDefault()
+        pickChoice(hatChoices[1].nextSceneId, hatChoices[1].label, hatChoices[1].imageSrc)
+      } else if (key === '3' && hatChoices[2]) {
+        event.preventDefault()
+        pickChoice(hatChoices[2].nextSceneId, hatChoices[2].label, hatChoices[2].imageSrc)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [scene, atChoice, pickChoice])
 
   React.useEffect(() => {
     const s = getSceneById(sceneId)
@@ -338,15 +412,18 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           role={scene.choices.some((c) => c.imageSrc) ? "group" : undefined}
                           aria-label={scene.choices.some((c) => c.imageSrc) ? "Choose a hat" : undefined}
                         >
-                          {scene.choices.map((c) =>
+                          {scene.choices.map((c, idx) =>
                             c.imageSrc ? (
                               <button
                                 key={c.id}
                                 type="button"
-                                className={hatTileClassName}
+                                className={cn(hatTileClassName, "relative")}
                                 onClick={() => pickChoice(c.nextSceneId, c.label, c.imageSrc)}
-                                aria-label={c.label}
+                                aria-label={`${c.label} - Press ${idx + 1}`}
                               >
+                                <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-md bg-gray-500/80 text-xs font-semibold text-white">
+                                  {idx + 1}
+                                </span>
                                 <Image
                                   src={c.imageSrc}
                                   alt=""
@@ -418,14 +495,14 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           disabled={!canSubmitFreeform}
                           onClick={onFreeformContinue}
                         >
-                          CONTINUE
+                          CONTINUE <KeyboardKey keyLabel="ENTER" className="ml-2" />
                         </Button>
                       </div>
                     )}
 
                     {!atLineEnd && lineIndex < lines.length - 1 && (
                       <Button type="button" size="lg" className={demoPrimaryCtaNarrowClassName} onClick={goNextLine}>
-                        CONTINUE
+                        CONTINUE <KeyboardKey keyLabel="ENTER" className="ml-2" />
                       </Button>
                     )}
 
@@ -435,7 +512,7 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                       !atChoice &&
                       interaction !== "freeform" && (
                         <Button type="button" size="lg" className={demoPrimaryCtaNarrowClassName} onClick={onLastLineContinue}>
-                          CONTINUE
+                          CONTINUE <KeyboardKey keyLabel="ENTER" className="ml-2" />
                         </Button>
                       )}
 
@@ -452,7 +529,7 @@ export function MimicryPage({ onContinue }: MimicryPageProps) {
                           })
                         }
                       >
-                        Continue
+                        Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
                       </Button>
                     )}
                 </div>

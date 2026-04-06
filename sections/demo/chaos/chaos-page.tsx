@@ -13,6 +13,8 @@ import {
   demoStageChaosQ2ClassName,
 } from "@/sections/demo/demo-ui"
 import { shuffleArray } from "@/sections/demo/shuffle-array"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 /** Q1 — four teaching-style options (copy not specified; plausible defaults). */
 const Q1_OPTIONS = [
@@ -243,6 +245,75 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
     })
   }, [])
 
+  const handleContinue = React.useCallback(() => {
+    if (step !== 1 || q2Selected.size === 0 || !onContinue) return
+    onContinue({ chaosQ1Answer: q1Choice, chaosQ2Skills: Array.from(q2Selected).sort() })
+  }, [step, q2Selected, onContinue, q1Choice])
+
+  // Enable Enter/Spacebar for Continue button in Q2 (but NOT for toggling skills)
+  useKeyboardNavigation({
+    onSubmit: step === 1 && q2Selected.size > 0 && onContinue ? handleContinue : undefined,
+    enableSubmitKeys: step === 1, // Only enable Enter/Space in Q2, and only for Continue
+  })
+
+  // Keyboard controls for Q1 - number keys 1-4 for the randomly positioned options
+  React.useEffect(() => {
+    if (step !== 0) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) return
+
+      const key = event.key
+      let optionIndex = -1
+
+      if (key === '1') optionIndex = 0
+      else if (key === '2') optionIndex = 1
+      else if (key === '3') optionIndex = 2
+      else if (key === '4') optionIndex = 3
+
+      if (optionIndex !== -1 && q1Placements[optionIndex]) {
+        event.preventDefault()
+        const placement = q1Placements[optionIndex]!
+        setQ1Choice(placement.label)
+        setQ2Selected(new Set())
+        setStep(1)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [step, q1Placements])
+
+  // Keyboard controls for Q2 - number keys 1-7 for skills
+  React.useEffect(() => {
+    if (step !== 1) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) return
+
+      const key = event.key
+      let skillIndex = -1
+
+      if (key === '1') skillIndex = 0
+      else if (key === '2') skillIndex = 1
+      else if (key === '3') skillIndex = 2
+      else if (key === '4') skillIndex = 3
+      else if (key === '5') skillIndex = 4
+      else if (key === '6') skillIndex = 5
+      else if (key === '7') skillIndex = 6
+
+      if (skillIndex !== -1 && Q2_SKILLS[skillIndex]) {
+        event.preventDefault()
+        toggleQ2Skill(Q2_SKILLS[skillIndex]!)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [step, toggleQ2Skill])
+
   React.useEffect(() => {
     if (step !== 1) {
       q2PrevSelSizeRef.current = 0
@@ -383,7 +454,7 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
             <h2 className={demoActivityHeadingClassName}>How would you describe your teaching?</h2>
 
             <div className={demoStageChaosQ1ClassName}>
-              {q1Placements.map((p) => {
+              {q1Placements.map((p, idx) => {
                 const selected = q1Choice === p.label
                 return (
                   <button
@@ -405,7 +476,11 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
                       setQ2Selected(new Set())
                       setStep(1)
                     }}
+                    aria-label={`${p.label} - Press ${idx + 1}`}
                   >
+                    <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-md bg-gray-500/80 text-sm font-semibold text-white">
+                      {idx + 1}
+                    </span>
                     {p.label}
                   </button>
                 )
@@ -440,7 +515,11 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
                         : "z-10 border-black/35 bg-white/95 text-black hover:border-black/50 hover:bg-white"
                     )}
                     onClick={() => toggleQ2Skill(skill)}
+                    aria-label={`${skill} - Press ${i + 1}`}
                   >
+                    <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-md bg-gray-500/80 text-xs font-semibold text-white">
+                      {i + 1}
+                    </span>
                     {skill}
                   </button>
                 )
@@ -459,11 +538,9 @@ export function ChaosPage({ onContinue }: ChaosPageProps) {
                       demoPrimaryCtaNarrowClassName,
                       "absolute z-30 w-max max-w-[min(92%,22rem)] min-w-[min(88vw,12rem)] shrink-0"
                     )}
-                    onClick={() =>
-                      onContinue?.({ chaosQ1Answer: q1Choice, chaosQ2Skills: Array.from(q2Selected).sort() })
-                    }
+                    onClick={handleContinue}
                   >
-                    Continue
+                    Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
                   </button>
                 )}
             </div>

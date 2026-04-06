@@ -14,6 +14,8 @@ import {
 } from "@/sections/demo/demo-ui"
 import { Tooltip } from "@base-ui/react/tooltip"
 import { cn } from "@/lib/utils"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 type Phase = "picking" | "spinQuestion" | "questionReveal" | "spinAnswer" | "result"
 
@@ -283,6 +285,18 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
     title = ""
   }
 
+  const handleContinue = React.useCallback(() => {
+    if (phase !== "result") return
+    onContinueAfterResult
+      ? onContinueAfterResult(selectedChoice && questionQ ? { answer: selectedChoice, questionNumber: questionQ } : undefined)
+      : window.location.reload()
+  }, [phase, onContinueAfterResult, selectedChoice, questionQ])
+
+  // Enable Enter/Spacebar for Continue button in result phase
+  useKeyboardNavigation({
+    onSubmit: phase === "result" ? handleContinue : undefined,
+  })
+
   return (
     <section className={cn(demoWideContentClassName, "text-slate-900", className)}>
       <div className="mb-8 flex flex-col items-center gap-2">
@@ -456,13 +470,9 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
             <Tooltip.Root>
               <Tooltip.Trigger
                 className={chanceContinueButtonClass}
-                onClick={() =>
-                  onContinueAfterResult
-                    ? onContinueAfterResult(selectedChoice && questionQ ? { answer: selectedChoice, questionNumber: questionQ } : undefined)
-                    : window.location.reload()
-                }
+                onClick={handleContinue}
               >
-                Continue
+                Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
               </Tooltip.Trigger>
               <Tooltip.Portal>
                 <Tooltip.Positioner side="bottom" sideOffset={10}>

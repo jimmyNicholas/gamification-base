@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 
 import { DemoStyleLayout } from "@/sections/demo/demo-outline-layout"
 import { demoPrimaryCtaConstrainedClassName } from "@/sections/demo/demo-ui"
+import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export { DEMO_OUTLINE_BG } from "@/sections/demo/demo-outline-layout"
 
@@ -43,6 +45,11 @@ export function DemoOutlinePage({ onBegin, className }: DemoOutlinePageProps) {
     return () => timers.forEach(clearTimeout)
   }, [])
 
+  // Enable Enter/Spacebar when button is visible
+  useKeyboardNavigation({
+    onSubmit: showButton ? onBegin : undefined,
+  })
+
   return (
     <DemoStyleLayout className={className}>
       <div className="flex w-full flex-col items-center gap-14 sm:gap-16">
@@ -74,7 +81,7 @@ export function DemoOutlinePage({ onBegin, className }: DemoOutlinePageProps) {
             className={demoPrimaryCtaConstrainedClassName}
             onClick={onBegin}
           >
-            Begin
+            Begin <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </Button>
         </div>
       </div>

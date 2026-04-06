@@ -9,7 +9,7 @@ export const BOOK_DRAG_ACTIVITIES: BookDragActivity[] = [
   { id: "conv-dice", label: "Conversation dice", quadrant: "Q3" },
   { id: "lucky-dip", label: "Lucky dip questions", quadrant: "Q3" },
   { id: "mock-interview", label: "Mock job interview", quadrant: "Q2" },
-  { id: "cust-sim", label: "Customer service simulation", quadrant: "Q2" },
+  { id: "cust-sim", label: "Restaurant simulation", quadrant: "Q2" },
   { id: "running-dict", label: "Running dictation", quadrant: "Q4" },
   { id: "word-assoc", label: "Word association", quadrant: "Q4" },
 ]

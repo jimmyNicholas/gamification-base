@@ -469,6 +469,13 @@ export function QuadrantAxesModelV2({
               </div>
             : null
 
+          // Number badge for flip cards (1=Q1, 3=Q2, 2=Q3, 4=Q4)
+          const numberBadge = isFlipCard ? (
+            <span className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-md bg-gray-500/80 text-sm font-semibold text-white">
+              {q === "Q1" ? "1" : q === "Q3" ? "2" : q === "Q2" ? "3" : "4"}
+            </span>
+          ) : null
+
           return (
             <div
               key={q}
@@ -495,6 +502,7 @@ export function QuadrantAxesModelV2({
                   : undefined
               }
             >
+              {numberBadge}
               {isFlipCard && isFlipped ? flipCardBack : resolvedContent}
             </div>
           )

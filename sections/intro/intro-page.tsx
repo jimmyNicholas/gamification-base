@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { icons } from "@/lib/icons"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export type IntroOutline = {
   objective: string
@@ -116,7 +117,7 @@ export function IntroPage({
               className="h-13 w-full max-w-xl rounded-full border-0 bg-[#a8e5cf] px-10 text-sm font-bold tracking-[0.12em] text-black uppercase shadow-[0_2px_12px_rgba(0,0,0,0.12)] hover:bg-[#98d9c1] sm:h-14 sm:max-w-2xl sm:text-base"
               onClick={onStartCourse}
             >
-              Start course
+              Start course <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </Button>
           </div>
         </div>

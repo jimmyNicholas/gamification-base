@@ -19,6 +19,7 @@ import {
 } from "@/sections/demo/match-grid-keys"
 import { shuffleArray } from "@/sections/demo/shuffle-array"
 import { cn } from "@/lib/utils"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 import { MatchEmojiCard, MatchLabelCard } from "./match-cards"
 
@@ -230,11 +231,21 @@ export function CustomTimedMatch({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (gameComplete) return
       const target = event.target as HTMLElement | null
       if (target?.closest("input, textarea, [contenteditable=true]")) return
 
       const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+
+      // P key for "Play again" when game is complete
+      if (gameComplete && key === 'p') {
+        event.preventDefault()
+        playAgain()
+        return
+      }
+
+      // Game keys only work when game is not complete
+      if (gameComplete) return
+
       const leftIdx = LEFT_KEY_TO_INDEX[key]
       if (leftIdx !== undefined) {
         const item = shuffledLeft[leftIdx]
@@ -254,7 +265,7 @@ export function CustomTimedMatch({
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [gameComplete, shuffledLeft, shuffledRight, matchedMatchIds, toggleLeft, toggleRight])
+  }, [gameComplete, shuffledLeft, shuffledRight, matchedMatchIds, toggleLeft, toggleRight, playAgain])
 
   const timerText =
     gameComplete && finalTimeMs != null
@@ -353,7 +364,7 @@ export function CustomTimedMatch({
             </h2>
             <div className="shrink-0 max-w-[200px]">
             <button type="button" onClick={playAgain} className={cn(demoPrimaryCtaConstrainedClassName, "shrink-0")}>
-              Play again
+              Play again <KeyboardKey keyLabel="P" className="ml-2" />
             </button>
             </div>
           </div>

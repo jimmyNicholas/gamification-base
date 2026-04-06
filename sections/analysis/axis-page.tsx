@@ -13,6 +13,7 @@ import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLa
 import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 import { KeyboardHints } from "@/components/keyboard-hints"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export type AxisPageStep =
   | "quizIntro"
@@ -162,20 +163,56 @@ export function AxisPage({
   const canSubmitAgency = !axesLocked && horizontalSide(horizontalIndex) !== null
   const canSubmitSelf = !axesLocked && verticalSide(verticalIndex) !== null
 
+  // Helper to advance to next step
+  const advanceStep = React.useCallback((next: FlowStep) => {
+    setStep(next)
+  }, [])
+
   // Keyboard navigation support
   const handleSubmit = React.useCallback(() => {
-    if (isAgencyQuiz && canSubmitAgency) {
+    // Handle quiz submission
+    if (isAgencyQuiz && !quizFeedback && canSubmitAgency) {
       const correctSide = step === "agencyQ1" ? AGENCY_Q1.correct : AGENCY_Q2.correct
       submitAgency(correctSide)
-    } else if (isSelfQuiz && canSubmitSelf) {
+      return
+    }
+    if (isSelfQuiz && !quizFeedback && canSubmitSelf) {
       const correctSide = step === "selfQ1" ? SELF_Q1.correct : SELF_Q2.correct
       submitSelf(correctSide)
-    } else {
-      // For intro screens or when feedback is shown, click the active button
-      const button = document.querySelector('button[type="button"]') as HTMLButtonElement
-      button?.click()
+      return
     }
-  }, [step, isAgencyQuiz, isSelfQuiz, canSubmitAgency, canSubmitSelf, submitAgency, submitSelf])
+
+    // Handle "Try again" after incorrect answer
+    if (quizFeedback && !quizFeedback.correct) {
+      setQuizFeedback(null)
+      return
+    }
+
+    // Handle continue/advance actions
+    switch (step) {
+      case "quizIntro":
+        advanceStep("agencyIntro")
+        break
+      case "agencyIntro":
+        advanceStep("agencyQ1")
+        break
+      case "agencyQ1":
+        if (quizFeedback?.correct) advanceStep("agencyQ2")
+        break
+      case "agencyQ2":
+        if (quizFeedback?.correct) advanceStep("selfIntro")
+        break
+      case "selfIntro":
+        advanceStep("selfQ1")
+        break
+      case "selfQ1":
+        if (quizFeedback?.correct) advanceStep("selfQ2")
+        break
+      case "selfQ2":
+        if (quizFeedback?.correct && onContinue) onContinue()
+        break
+    }
+  }, [step, isAgencyQuiz, isSelfQuiz, canSubmitAgency, canSubmitSelf, quizFeedback, submitAgency, submitSelf, advanceStep, onContinue])
 
   useKeyboardNavigation({
     onHorizontalChange: isAgencyQuiz ? onHChange : undefined,
@@ -403,7 +440,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => advance("agencyIntro")}
           >
-            Continue
+            Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       case "agencyIntro":
@@ -413,7 +450,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => advance("agencyQ1")}
           >
-            Continue
+            Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       case "agencyQ1":
@@ -430,7 +467,7 @@ export function AxisPage({
               disabled={!canSubmitAgency}
               onClick={() => submitAgency(AGENCY_Q1.correct)}
             >
-              Submit
+              Submit <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -441,7 +478,7 @@ export function AxisPage({
               className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
               onClick={() => advance("agencyQ2")}
             >
-              Continue
+              Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -451,7 +488,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => setQuizFeedback(null)}
           >
-            Try again
+            Try again <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       case "agencyQ2":
@@ -468,7 +505,7 @@ export function AxisPage({
               disabled={!canSubmitAgency}
               onClick={() => submitAgency(AGENCY_Q2.correct)}
             >
-              Submit
+              Submit <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -479,7 +516,7 @@ export function AxisPage({
               className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
               onClick={() => advance("selfIntro")}
             >
-              Continue
+              Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -489,7 +526,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => setQuizFeedback(null)}
           >
-            Try again
+            Try again <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       case "selfIntro":
@@ -499,7 +536,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => advance("selfQ1")}
           >
-            Continue
+            Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       case "selfQ1":
@@ -516,7 +553,7 @@ export function AxisPage({
               disabled={!canSubmitSelf}
               onClick={() => submitSelf(SELF_Q1.correct)}
             >
-              Submit
+              Submit <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -527,7 +564,7 @@ export function AxisPage({
               className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
               onClick={() => advance("selfQ2")}
             >
-              Continue
+              Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -537,7 +574,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => setQuizFeedback(null)}
           >
-            Try again
+            Try again <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       case "selfQ2":
@@ -554,7 +591,7 @@ export function AxisPage({
               disabled={!canSubmitSelf}
               onClick={() => submitSelf(SELF_Q2.correct)}
             >
-              Submit
+              Submit <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           )
         }
@@ -565,7 +602,7 @@ export function AxisPage({
               className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
               onClick={() => onContinue()}
             >
-              Continue
+              Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           ) : null
         }
@@ -575,7 +612,7 @@ export function AxisPage({
             className={cn(demoPrimaryCtaConstrainedClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
             onClick={() => setQuizFeedback(null)}
           >
-            Try again
+            Try again <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         )
       default:
@@ -610,12 +647,10 @@ export function AxisPage({
           {primaryCta ? (
               <div className="mt-auto flex w-full flex-col items-center gap-3 pt-2 sm:pt-4">
                 <KeyboardHints
-                  showAxisHints={isAgencyQuiz || isSelfQuiz}
-                  showSubmitHint={true}
-                  submitLabel={
-                    quizFeedback
-                      ? (quizFeedback.correct ? "continue" : "try again")
-                      : (canSubmitAgency || canSubmitSelf ? "submit" : "continue")
+                  axisMode={
+                    isAgencyQuiz ? "horizontal" :
+                    isSelfQuiz ? "vertical" :
+                    "none"
                   }
                   className="mb-1"
                 />

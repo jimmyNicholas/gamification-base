@@ -8,6 +8,7 @@ import {
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export type ReflectionPageProps = {
   onContinue?: () => void
@@ -95,7 +96,7 @@ export function ReflectionPage({ onContinue, onReflectionTextUsed }: ReflectionP
                   cursor: canContinue ? "pointer" : "not-allowed",
                 }}
               >
-                Continue
+                Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
               </button>
             ) : null}
           </div>

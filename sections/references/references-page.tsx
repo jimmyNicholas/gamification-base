@@ -8,6 +8,7 @@ import {
   demoPrimaryCtaNativeFocusClassName,
 } from "@/sections/demo/demo-ui"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export type ReferencesPageProps = {
   onContinue?: () => void
@@ -186,7 +187,7 @@ export function ReferencesPage({ onContinue }: ReferencesPageProps) {
             className={`${demoPrimaryCtaConstrainedClassName} ${demoPrimaryCtaNativeFocusClassName} mx-auto`}
             onClick={() => onContinue()}
           >
-            Course Complete
+            Course Complete <KeyboardKey keyLabel="ENTER" className="ml-2" />
           </button>
         ) : null}
       </div>

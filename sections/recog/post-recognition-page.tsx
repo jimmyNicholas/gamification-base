@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { QuadrantAxesModelV2 } from "@/components/quadrant-axes-model-v2"
 import { useMemo } from "react"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 const ALL_QUADRANTS: QuadrantId[] = ["Q1", "Q2", "Q3", "Q4"]
 
@@ -124,6 +125,64 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
     onSubmit: remainingActivities.length === 0 && onContinue ? onContinue : undefined,
   })
 
+  // Keyboard controls for cards (1, 2, 3, 4)
+  // 1 = Q1 (Competition), 2 = Q3 (Chance), 3 = Q2 (Roleplay), 4 = Q4 (Chaos)
+  // If an activity is selected, place it on the card. Otherwise, flip the card.
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) return
+
+      const key = event.key
+      let quadrant: QuadrantId | null = null
+
+      if (key === '1') quadrant = 'Q1'
+      else if (key === '2') quadrant = 'Q3'
+      else if (key === '3') quadrant = 'Q2'
+      else if (key === '4') quadrant = 'Q4'
+
+      if (quadrant) {
+        event.preventDefault()
+
+        // If an activity is selected and drag/drop is active, place it on the card
+        if (allCardsSeenBackOnce && selectedActivityId && handleBookTileActivityDrop) {
+          handleBookTileActivityDrop(quadrant, selectedActivityId)
+        } else {
+          // Otherwise, flip the card
+          onBookFlipToggle(quadrant)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onBookFlipToggle, allCardsSeenBackOnce, selectedActivityId, handleBookTileActivityDrop])
+
+  // Keyboard controls for activity selection (Q, W, E, R, T, Y, U, I)
+  // Maps to activities in the order they appear (after shuffle)
+  React.useEffect(() => {
+    if (!allCardsSeenBackOnce) return
+
+    const activityKeys = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i']
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) return
+
+      const key = event.key.toLowerCase()
+      const keyIndex = activityKeys.indexOf(key)
+
+      if (keyIndex !== -1 && remainingActivities[keyIndex]) {
+        event.preventDefault()
+        const activity = remainingActivities[keyIndex]!
+        setSelectedActivityId((prev) => (prev === activity.id ? null : activity.id))
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [allCardsSeenBackOnce, remainingActivities])
+
   return (
     <RecogLayout dataActivity="postRecognition">
       <TwoColumnActivityStageLayout
@@ -153,8 +212,9 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
                   className="grid grid-cols-2 gap-2 text-center items-center justify-center"
                   aria-label="Activities — drag onto a category or select one, then click a category card"
                 >
-                  {remainingActivities.map((a) => {
+                  {remainingActivities.map((a, idx) => {
                     const isSelected = selectedActivityId === a.id
+                    const keyLabel = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'][idx]
                     return (
                       <button
                         key={a.id}
@@ -166,12 +226,18 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
                         }}
                         onClick={() => setSelectedActivityId((prev) => (prev === a.id ? null : a.id))}
                         aria-pressed={isSelected}
+                        aria-label={`${a.label} - Press ${keyLabel}`}
                         className={cn(
-                          "cursor-grab rounded-xl border border-black/30 bg-white/70 px-3 py-2 text-sm font-medium shadow-sm active:cursor-grabbing",
+                          "relative cursor-grab rounded-xl border border-black/30 bg-white/70 px-3 py-2 text-sm font-medium shadow-sm active:cursor-grabbing",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
                           isSelected && "ring-2 ring-blue-600 ring-offset-2"
                         )}
                       >
+                        {keyLabel && (
+                          <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded bg-gray-500/80 text-xs font-semibold text-white">
+                            {keyLabel}
+                          </span>
+                        )}
                         {a.label}
                       </button>
                     )
@@ -193,7 +259,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
                   className={cn(demoPrimaryCtaNarrowClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
                   onClick={() => onContinue()}
                 >
-                  Continue
+                  Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
                 </button>
               </div>
               </>

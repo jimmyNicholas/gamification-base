@@ -1,21 +1,17 @@
 import React from 'react';
+import { KeyboardKey } from './keyboard-key';
+
+type AxisMode = 'horizontal' | 'vertical' | 'both' | 'none';
 
 interface KeyboardHintsProps {
   /**
-   * Show hints for axis navigation (arrow keys/WASD)
+   * Which axis controls to show
+   * - "horizontal": ← → or A D (for agency-fate)
+   * - "vertical": ↑ ↓ or W S (for self-intact/dissolved)
+   * - "both": All four arrows + WASD (for assessment)
+   * - "none": No axis hints
    */
-  showAxisHints?: boolean;
-
-  /**
-   * Show hints for submit action (Enter/Spacebar)
-   */
-  showSubmitHint?: boolean;
-
-  /**
-   * Custom submit button label (e.g., "Continue", "Submit")
-   * Default: "continue"
-   */
-  submitLabel?: string;
+  axisMode?: AxisMode;
 
   /**
    * Additional CSS classes
@@ -24,15 +20,14 @@ interface KeyboardHintsProps {
 }
 
 /**
- * Visual component that displays keyboard shortcut hints to learners
+ * Visual component that displays keyboard shortcut hints for axis navigation
+ * Enter/Spacebar hints are now inline with buttons, not shown here
  */
 export function KeyboardHints({
-  showAxisHints = false,
-  showSubmitHint = false,
-  submitLabel = 'continue',
+  axisMode = 'none',
   className = '',
 }: KeyboardHintsProps) {
-  if (!showAxisHints && !showSubmitHint) {
+  if (axisMode === 'none') {
     return null;
   }
 
@@ -42,52 +37,51 @@ export function KeyboardHints({
       role="status"
       aria-live="polite"
     >
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-        {showAxisHints && (
+      <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+        {axisMode === 'horizontal' && (
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-flex items-center gap-0.5">
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                ↑
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                ↓
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                ←
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                →
-              </kbd>
+              <KeyboardKey keyLabel="←" />
+              <KeyboardKey keyLabel="→" />
             </span>
             <span className="text-xs">or</span>
             <span className="inline-flex items-center gap-0.5">
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                W
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                A
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                S
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-                D
-              </kbd>
+              <KeyboardKey keyLabel="A" />
+              <KeyboardKey keyLabel="D" />
             </span>
-            <span className="text-xs">to position</span>
           </span>
         )}
 
-        {showAxisHints && showSubmitHint && (
-          <span className="text-gray-400 dark:text-gray-600">•</span>
+        {axisMode === 'vertical' && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-0.5">
+              <KeyboardKey keyLabel="↑" />
+              <KeyboardKey keyLabel="↓" />
+            </span>
+            <span className="text-xs">or</span>
+            <span className="inline-flex items-center gap-0.5">
+              <KeyboardKey keyLabel="W" />
+              <KeyboardKey keyLabel="S" />
+            </span>
+          </span>
         )}
 
-        {showSubmitHint && (
+        {axisMode === 'both' && (
           <span className="inline-flex items-center gap-1.5">
-            <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
-              Enter
-            </kbd>
-            <span className="text-xs">to {submitLabel}</span>
+            <span className="inline-flex items-center gap-0.5">
+              <KeyboardKey keyLabel="↑" />
+              <KeyboardKey keyLabel="↓" />
+              <KeyboardKey keyLabel="←" />
+              <KeyboardKey keyLabel="→" />
+            </span>
+            <span className="text-xs">or</span>
+            <span className="inline-flex items-center gap-0.5">
+              <KeyboardKey keyLabel="W" />
+              <KeyboardKey keyLabel="A" />
+              <KeyboardKey keyLabel="S" />
+              <KeyboardKey keyLabel="D" />
+            </span>
+            <span className="text-xs">to position</span>
           </span>
         )}
       </div>

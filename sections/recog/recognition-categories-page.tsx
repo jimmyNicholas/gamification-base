@@ -7,6 +7,7 @@ import {
 } from "@/sections/demo/demo-ui"
 import { cn } from "@/lib/utils"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export type RecognitionCategoriesPageProps = {
   onContinue?: () => void
@@ -42,7 +43,7 @@ export function RecognitionCategoriesPage({ onContinue }: RecognitionCategoriesP
                   )}
                   onClick={() => onContinue()}
                 >
-                  Continue
+                  Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
                 </button>
               </div>
             ) : null}

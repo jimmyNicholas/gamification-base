@@ -9,6 +9,7 @@ import {
 } from "@/sections/demo/demo-ui"
 import { cn } from "@/lib/utils"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { KeyboardKey } from "@/components/keyboard-key"
 
 export type RecognitionReflectionPageProps = {
   onContinue?: () => void
@@ -69,7 +70,7 @@ export function RecognitionReflectionPage({ onContinue, onReflectionUsed }: Reco
               )}
               onClick={() => onContinue()}
             >
-              Continue
+              Continue <KeyboardKey keyLabel="ENTER" className="ml-2" />
             </button>
           </div>
         ) : null}
