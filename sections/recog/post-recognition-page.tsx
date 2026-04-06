@@ -91,30 +91,6 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
     return result
   }, [placedActivityById])
 
-  const bookFrontExtra = React.useMemo(() => {
-    const byQuadrant: Record<QuadrantId, string[]> = { Q1: [], Q2: [], Q3: [], Q4: [] }
-    for (const act of BOOK_DRAG_ACTIVITIES) {
-      if (placedActivityById[act.id] === act.quadrant) {
-        byQuadrant[act.quadrant].push(act.label)
-      }
-    }
-    const out: Partial<Record<QuadrantId, React.ReactNode>> = {}
-    for (const q of ALL_QUADRANTS) {
-      const labels = byQuadrant[q]
-      if (labels.length === 0) continue
-      out[q] = (
-        <ul className="list-none space-y-0.5 pl-0">
-          {labels.map((label) => (
-            <li key={label} className="align-middle border-b border-black/10 pb-0.5 text-center last:border-0">
-              {label}
-            </li>
-          ))}
-        </ul>
-      )
-    }
-    return out
-  }, [placedActivityById])
-
   const remainingActivities = React.useMemo(() => {
     const ordered = dragActivityOrder ?? BOOK_DRAG_ACTIVITIES
     return ordered.filter((a) => placedActivityById[a.id] == null)
@@ -249,7 +225,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
             {onContinue && remainingActivities.length === 0 ? (
               <>
               <div>
-                <h3 className="text-left text-lg p-2 leading-snug sm:text-xl border border-black pb-2 bg-white/70 p-2 rounded-xl">
+                <h3 className="text-left text-lg p-2 leading-snug sm:text-xl border border-black pb-2 bg-white/70 rounded-xl">
                 All activities are placed. You can revisit the game categories anytime to reread definitions, or continue to the next section.
                 </h3>
               </div>

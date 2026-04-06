@@ -62,7 +62,7 @@ function hasDemoSectionData(o: DemoMatchOutcomes): boolean {
     o.roleplayHatImageSrc !== null ||
     o.roleplayTomResponse !== null ||
     o.chaosQ1Answer !== null ||
-    o.chaosQ2Skills.length > 0
+    o.chaosSkills.length > 0
   )
 }
 
@@ -109,7 +109,7 @@ function CollapsibleSection({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-black/[0.02]"
+        className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-black/2"
       >
         <h4 className="text-sm font-semibold text-black">{title}</h4>
         {isOpen ? (
@@ -124,13 +124,16 @@ function CollapsibleSection({
 }
 
 export function AdminTracking() {
-  const [statements, setStatements] = useState<xAPIStatement[]>([])
+  const [statements, setStatements] = useState<xAPIStatement[]>(() => getStatements())
   const [summary, setSummary] = useState<ReturnType<typeof getSessionSummary>>(
-    null
+    () => getSessionSummary()
   )
   const [sessionData, setSessionData] = useState<ReturnType<
     typeof getCompleteSessionData
-  > | null>(null)
+  > | null>(() => {
+    const outcomes = loadDemoMatchOutcomesFromSession()
+    return getCompleteSessionData(outcomes)
+  })
 
   const refreshData = () => {
     const stmts = getStatements()
@@ -144,7 +147,6 @@ export function AdminTracking() {
   }
 
   useEffect(() => {
-    refreshData()
     // Refresh every 2 seconds to show live updates
     const interval = setInterval(refreshData, 2000)
     return () => clearInterval(interval)
@@ -346,11 +348,11 @@ export function AdminTracking() {
                     </span>
                   </div>
                 )}
-                {outcomes.chaosQ2Skills.length > 0 && (
+                {outcomes.chaosSkills.length > 0 && (
                   <div>
-                    <span className="text-black/60">Chaos Q2 Answers: </span>
+                    <span className="text-black/60">Chaos Skills: </span>
                     <span className="font-semibold text-black">
-                      {outcomes.chaosQ2Skills.join(", ")}
+                      {outcomes.chaosSkills.join(", ")}
                     </span>
                   </div>
                 )}
@@ -474,7 +476,7 @@ export function AdminTracking() {
 
       {/* xAPI Statements - Collapsible, Starts Collapsed */}
       <CollapsibleSection title={`xAPI Statements (${statements.length})`} defaultOpen={false}>
-        <div className="max-h-64 overflow-y-auto rounded border border-black/10 bg-black/[0.02] p-3">
+        <div className="max-h-64 overflow-y-auto rounded border border-black/10 bg-black/2 p-3">
           <pre className="text-xs font-mono text-black/80">
             {JSON.stringify(statements.slice(-5), null, 2)}
           </pre>

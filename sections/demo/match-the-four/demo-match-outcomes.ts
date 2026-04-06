@@ -17,7 +17,7 @@ export type DemoMatchOutcomes = {
   roleplayHatImageSrc: string | null
   roleplayTomResponse: string | null
   chaosQ1Answer: string | null
-  chaosQ2Skills: readonly string[]
+  chaosSkills: readonly string[]
   // Recognition tracking
   recognitionMatchMistakes: number
   recognitionCardFlips: number
@@ -50,7 +50,7 @@ export function initialDemoMatchOutcomes(): DemoMatchOutcomes {
     roleplayHatImageSrc: null,
     roleplayTomResponse: null,
     chaosQ1Answer: null,
-    chaosQ2Skills: [],
+    chaosSkills: [],
     recognitionMatchMistakes: 0,
     recognitionCardFlips: 0,
     recognitionReflectionUsed: false,

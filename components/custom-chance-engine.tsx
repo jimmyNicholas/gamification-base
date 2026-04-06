@@ -217,6 +217,19 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
     [phase, pickedIds, pickedSet, deck]
   )
 
+  // Auto-select first card when entering picking phase
+  const didAutoSelectFirst = React.useRef(false)
+  React.useEffect(() => {
+    if (phase !== "picking" || didAutoSelectFirst.current || pickedIds.length > 0) return
+    if (deck.length > 0) {
+      didAutoSelectFirst.current = true
+      const id = requestAnimationFrame(() => {
+        pickCard(deck[0]!.id)
+      })
+      return () => cancelAnimationFrame(id)
+    }
+  }, [phase, pickedIds.length, deck, pickCard])
+
   const onPoolKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (phase !== "picking") return
@@ -287,9 +300,11 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
 
   const handleContinue = React.useCallback(() => {
     if (phase !== "result") return
-    onContinueAfterResult
-      ? onContinueAfterResult(selectedChoice && questionQ ? { answer: selectedChoice, questionNumber: questionQ } : undefined)
-      : window.location.reload()
+    if (onContinueAfterResult) {
+      onContinueAfterResult(selectedChoice && questionQ ? { answer: selectedChoice, questionNumber: questionQ } : undefined)
+    } else {
+      window.location.reload()
+    }
   }, [phase, onContinueAfterResult, selectedChoice, questionQ])
 
   // Enable Enter/Spacebar for Continue button in result phase
@@ -318,7 +333,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
       {phase === "picking" ? (
         <div className="flex flex-col items-center justify-center gap-10 pb-2 sm:flex-row lg:items-stretch lg:justify-center lg:gap-16">
           {/* 4×4 row-major — matches deck[] order; no rotation / transform */}
-          <div className="flex min-h-[20rem] min-w-0 shrink-0 flex-col items-center justify-center gap-3 self-stretch sm:min-h-[22rem] lg:min-h-0">
+          <div className="flex min-h-80 min-w-0 shrink-0 flex-col items-center justify-center gap-3 self-stretch sm:min-h-88 lg:min-h-0">
             <p id={poolInstructionsId} className="text-sm text-black/70 text-center mt-2">
               Use arrow keys or W A S D to move. Press Enter or Space to select a card.
             </p>
@@ -410,7 +425,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
       ) : null}
 
       {phase === "questionReveal" && activeQuestion ? (
-        <div className="flex min-h-[18rem] flex-col items-center justify-center px-4 pb-8 text-center sm:min-h-[22rem]">
+        <div className="flex min-h-72 flex-col items-center justify-center px-4 pb-8 text-center sm:min-h-88">
           <p className={cn(chanceQuestionPromptClass, "mx-auto drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]")}>
             {activeQuestion.prompt}
           </p>
@@ -424,7 +439,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
           </p>
           <div className="grid min-h-0 w-full grid-cols-1 gap-8 lg:grid-cols-[minmax(0,35fr)_minmax(0,65fr)] lg:items-stretch lg:gap-8 xl:gap-10 lg:h-80 xl:h-96">
             <ol
-              className="mx-auto grid min-h-[17.5rem] w-full max-w-md list-none grid-cols-2 grid-rows-2 gap-3 sm:min-h-[19rem] sm:gap-4 lg:mx-0 lg:h-full lg:min-h-0 lg:max-w-none"
+              className="mx-auto grid min-h-70 w-full max-w-md list-none grid-cols-2 grid-rows-2 gap-3 sm:min-h-76 sm:gap-4 lg:mx-0 lg:h-full lg:min-h-0 lg:max-w-none"
               aria-label="Answer choices"
             >
               {activeQuestion.choices.map((text, idx) => {
@@ -432,7 +447,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
                 return (
                   <li
                     key={idx}
-                    className="flex h-full min-h-[6.5rem] items-center justify-center rounded-xl border-2 border-black/80 px-3 py-3 text-center shadow-md sm:min-h-[7.25rem] lg:min-h-0"
+                    className="flex h-full min-h-26 items-center justify-center rounded-xl border-2 border-black/80 px-3 py-3 text-center shadow-md sm:min-h-29 lg:min-h-0"
                     style={{ backgroundColor: getQuadrantColor(qn) }}
                   >
                     <span className="text-balance text-base font-semibold leading-snug text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] sm:text-lg md:text-xl">
@@ -445,7 +460,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
             <div className="flex min-h-0 w-full min-w-0 flex-col items-center justify-center gap-2">
               <ChanceWheel
                 key="spin-a"
-                className="min-h-0 w-full max-w-[19rem] lg:max-w-full"
+                className="min-h-0 w-full max-w-76 lg:max-w-full"
                 disabled={false}
                 onComplete={onAnswerSpin}
                 ariaLabel="Spin for your answer"

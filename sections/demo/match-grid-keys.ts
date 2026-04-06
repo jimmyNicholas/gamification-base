@@ -7,11 +7,11 @@ export const MATCH_GRID_LEFT_KEY_TO_INDEX: Record<string, number> = {
 }
 
 export const MATCH_GRID_RIGHT_KEY_TO_INDEX: Record<string, number> = {
-  "7": 0,
-  "8": 1,
-  "9": 2,
-  "0": 3,
+  "5": 0,
+  "6": 1,
+  "7": 2,
+  "8": 3,
 }
 
 export const MATCH_GRID_LEFT_SLOT_KEYS = ["1", "2", "3", "4"] as const
-export const MATCH_GRID_RIGHT_SLOT_KEYS = ["7", "8", "9", "0"] as const
+export const MATCH_GRID_RIGHT_SLOT_KEYS = ["5", "6", "7", "8"] as const

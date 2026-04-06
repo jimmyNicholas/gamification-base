@@ -435,7 +435,7 @@ export function CustomTimedMatch({
                   onNextGame?.(t != null ? { timeMs: t, animalEmoji } : undefined)
                 }}
               >
-                Next game
+                Next game <KeyboardKey keyLabel="ENTER" className="ml-2" />
               </Button>
             </div>
           ) : null}

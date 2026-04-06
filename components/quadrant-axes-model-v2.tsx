@@ -131,10 +131,6 @@ function clampAxisIndex(v: number | undefined): AxisIndex {
   return r as AxisIndex
 }
 
-function axisIndexToPercent(index: AxisIndex): number {
-  return (index / AXIS_MAX) * 100
-}
-
 function snapFromRatio(ratio: number): AxisIndex {
   return clampAxisIndex(Math.round(Math.max(0, Math.min(1, ratio)) * AXIS_MAX))
 }

@@ -109,7 +109,7 @@ export function buildLeftCard(
       }
     }
     case "chaos": {
-      const skills = outcomes.chaosQ2Skills
+      const skills = outcomes.chaosSkills
       if (skills.length === 0) {
         const line = "Grammar"
         return {

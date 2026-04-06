@@ -161,6 +161,8 @@ type ChanceWheelProps = {
   ariaLabel?: string
   /** Label type to show on the wheel: "none", "numbers" (1-4), or "letters" (A-D). */
   labelType?: "none" | "numbers" | "letters"
+  /** Enable global keyboard listener for Space/Enter. Set to false when other UI elements need these keys. Default: true */
+  enableGlobalKeyboard?: boolean
 }
 
 export function ChanceWheel({
@@ -169,6 +171,7 @@ export function ChanceWheel({
   className,
   ariaLabel = "Spin the wheel",
   labelType = "letters",
+  enableGlobalKeyboard = true,
 }: ChanceWheelProps) {
   const [rotation, setRotation] = React.useState(0)
   const [spinning, setSpinning] = React.useState(false)
@@ -231,7 +234,7 @@ export function ChanceWheel({
 
   // Global keyboard listener for Space/Enter when wheel is ready to spin
   React.useEffect(() => {
-    if (disabled || spinning) return
+    if (!enableGlobalKeyboard || disabled || spinning) return
 
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -246,7 +249,7 @@ export function ChanceWheel({
 
     window.addEventListener("keydown", handleGlobalKeyDown)
     return () => window.removeEventListener("keydown", handleGlobalKeyDown)
-  }, [disabled, spinning, startSpin])
+  }, [enableGlobalKeyboard, disabled, spinning, startSpin])
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -266,10 +269,10 @@ export function ChanceWheel({
       )}
     >
       <div className="flex min-h-0 w-full flex-1 items-center justify-center">
-        <div className="relative aspect-square h-full max-h-full w-auto max-w-full min-h-0 min-w-[11rem]">
+        <div className="relative aspect-square h-full max-h-full w-auto max-w-full min-h-0 min-w-44">
           {/* Pointer at top */}
           <div
-            className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1 border-x-[7px] border-b-[12px] border-x-transparent border-b-black/80"
+            className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1 border-x-[7px] border-b-12 border-x-transparent border-b-black/80"
             aria-hidden
           />
           <button

@@ -45,6 +45,18 @@ export default function Home() {
   const [matchOutcomesSessionReady, setMatchOutcomesSessionReady] = useState(false)
   const [prevPhase, setPrevPhase] = useState<CoursePhase | null>(null)
   const [adminPanelOpen, setAdminPanelOpen] = useState(false)
+  const [unlockedPhases, setUnlockedPhases] = useState<Set<CoursePhase>>(new Set(["intro"]))
+
+  // Unlock a phase
+  const unlockPhase = useCallback((phaseToUnlock: CoursePhase) => {
+    setUnlockedPhases((prev) => new Set([...prev, phaseToUnlock]))
+  }, [])
+
+  // Navigate to a phase and unlock it
+  const navigateToPhase = useCallback((newPhase: CoursePhase) => {
+    unlockPhase(newPhase)
+    setPhase(newPhase)
+  }, [unlockPhase])
 
   // Initialize xAPI tracking on mount
   useEffect(() => {
@@ -92,8 +104,8 @@ export default function Home() {
       competitionTimeMs: payload?.timeMs ?? o.competitionTimeMs,
       competitionAnimalEmoji: payload?.animalEmoji ?? o.competitionAnimalEmoji,
     }))
-    setPhase("chance")
-  }, [])
+    navigateToPhase("chance")
+  }, [navigateToPhase])
 
   const goToMimicry = useCallback((payload?: { answer: string; questionNumber: number }) => {
     setMatchOutcomes((o) => ({
@@ -101,8 +113,8 @@ export default function Home() {
       chanceQuestionNumber: payload?.questionNumber ?? o.chanceQuestionNumber,
       chanceAnswer: payload?.answer ?? o.chanceAnswer,
     }))
-    setPhase("mimicry")
-  }, [])
+    navigateToPhase("mimicry")
+  }, [navigateToPhase])
 
   const goToChaos = useCallback(
     (payload?: { hatLabel: string | null; hatImageSrc: string | null; tomResponse: string | null }) => {
@@ -112,57 +124,57 @@ export default function Home() {
         roleplayHatImageSrc: payload?.hatImageSrc ?? o.roleplayHatImageSrc,
         roleplayTomResponse: payload?.tomResponse ?? o.roleplayTomResponse,
       }))
-      setPhase("chaos")
+      navigateToPhase("chaos")
     },
-    []
+    [navigateToPhase]
   )
 
-  const goToRecognitionFromChaos = useCallback((payload?: { chaosQ1Answer: string | null; chaosQ2Skills: readonly string[] }) => {
+  const goToRecognitionFromChaos = useCallback((payload?: { chaosQ1Answer: string | null; chaosSkills: readonly string[] }) => {
     setMatchOutcomes((o) => ({
       ...o,
       chaosQ1Answer: payload?.chaosQ1Answer ?? o.chaosQ1Answer,
-      chaosQ2Skills: payload?.chaosQ2Skills ?? o.chaosQ2Skills,
+      chaosSkills: payload?.chaosSkills ?? o.chaosSkills,
     }))
-    setPhase("recognition")
-  }, [])
+    navigateToPhase("recognition")
+  }, [navigateToPhase])
 
   const goToRecognitionCategories = useCallback(() => {
-    setPhase("recognitionCategories")
-  }, [])
+    navigateToPhase("recognitionCategories")
+  }, [navigateToPhase])
 
   const goToRecognitionMiniReflection = useCallback(() => {
-    setPhase("recognitionMiniReflection")
-  }, [])
+    navigateToPhase("recognitionMiniReflection")
+  }, [navigateToPhase])
 
   const goToPostRecognition = useCallback(() => {
-    setPhase("postRecognition")
-  }, [])
+    navigateToPhase("postRecognition")
+  }, [navigateToPhase])
 
   const goToBook = useCallback(() => {
-    setPhase("book")
-  }, [])
+    navigateToPhase("book")
+  }, [navigateToPhase])
 
   const startCourseFromIntro = useCallback(() => {
     clearDemoMatchOutcomesSession()
     setMatchOutcomes(initialDemoMatchOutcomes())
-    setPhase("demoOutline")
-  }, [])
+    navigateToPhase("demoOutline")
+  }, [navigateToPhase])
 
   const goToAssessment = useCallback(() => {
-    setPhase("axisTogether")
-  }, [])
+    navigateToPhase("axisTogether")
+  }, [navigateToPhase])
 
   const goToReflection = useCallback(() => {
-    setPhase("reflection")
-  }, [])
+    navigateToPhase("reflection")
+  }, [navigateToPhase])
 
   const goToReferences = useCallback(() => {
-    setPhase("references")
-  }, [])
+    navigateToPhase("references")
+  }, [navigateToPhase])
 
   const finishReferences = useCallback(() => {
-    setPhase("intro")
-  }, [])
+    navigateToPhase("intro")
+  }, [navigateToPhase])
 
   const handleCompetitionReplay = useCallback(() => {
     setMatchOutcomes((o) => ({
@@ -235,7 +247,7 @@ export default function Home() {
       main = <IntroPage onStartCourse={startCourseFromIntro} />
       break
     case "demoOutline":
-      main = <DemoOutlinePage onBegin={() => setPhase("competitionActivity")} />
+      main = <DemoOutlinePage onBegin={() => navigateToPhase("competitionActivity")} />
       break
     case "competitionActivity":
       main = <CompetitionActivityPage onNextGame={goToChance} onReplay={handleCompetitionReplay} />
@@ -307,25 +319,26 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full flex-col md:flex-row">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
       >
         Skip to main content
       </a>
-      <main id="main-content" className="min-h-screen min-w-0 flex-1">
-        {main}
-      </main>
       <CourseNavPanel
         phase={phase}
-        onNavigate={setPhase}
+        onNavigate={navigateToPhase}
         adminPanelOpen={adminPanelOpen}
         onToggleAdminPanel={() => setAdminPanelOpen(!adminPanelOpen)}
+        unlockedPhases={unlockedPhases}
       />
+      <main id="main-content" className="min-h-screen min-w-0 flex-1 pt-16 md:pt-0">
+        {main}
+      </main>
       <AdminPage
         currentPhase={phase}
-        onNavigate={setPhase}
+        onNavigate={navigateToPhase}
         isOpen={adminPanelOpen}
         onClose={() => setAdminPanelOpen(false)}
       />

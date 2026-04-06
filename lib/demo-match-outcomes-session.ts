@@ -64,8 +64,8 @@ function parseStored(json: string): DemoMatchOutcomes | null {
         o.chaosQ1Answer === null || typeof o.chaosQ1Answer === "string"
           ? (o.chaosQ1Answer as string | null)
           : null,
-      chaosQ2Skills: Array.isArray(o.chaosQ2Skills)
-        ? o.chaosQ2Skills.filter((x): x is string => typeof x === "string")
+      chaosSkills: Array.isArray(o.chaosSkills)
+        ? o.chaosSkills.filter((x): x is string => typeof x === "string")
         : [],
       recognitionMatchMistakes:
         typeof o.recognitionMatchMistakes === "number"

@@ -26,7 +26,7 @@ export function AdminPage({ currentPhase, onNavigate, isOpen, onClose }: AdminPa
 
       {/* Overlay Panel — anchor left+right so width follows available space; avoid w-full max-w-7xl + right offset (negative left edge / clipping). */}
       <div
-        className="fixed inset-y-0 left-0 right-0 z-50 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 shadow-2xl transition-transform md:right-[3.75rem]"
+        className="fixed inset-y-0 left-0 right-0 z-50 overflow-y-auto bg-linear-to-br from-slate-50 to-slate-100 shadow-2xl transition-transform md:right-15"
         role="dialog"
         aria-modal="true"
         aria-label="Admin Panel"
