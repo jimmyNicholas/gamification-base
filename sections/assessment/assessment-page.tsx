@@ -463,10 +463,11 @@ export function AssessmentPage({
           <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
           {primaryCta && (
             <div className="mt-auto flex w-full flex-col items-center gap-3 pt-2 sm:pt-4">
-              <KeyboardHints
-                axisMode={isSituationStep(step) && !submitted ? "both" : "none"}
-                className="mb-1"
-              />
+              <div className="mb-1 min-h-6 flex items-center">
+                <KeyboardHints
+                  axisMode={isSituationStep(step) && !submitted ? "both" : "none"}
+                />
+              </div>
               {primaryCta}
             </div>
 

@@ -39,6 +39,7 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
   const [placedActivityById, setPlacedActivityById] = React.useState<Partial<Record<string, QuadrantId>>>({})
   const [selectedActivityId, setSelectedActivityId] = React.useState<string | null>(null)
   const [dragActivityOrder, setDragActivityOrder] = React.useState<BookDragActivity[] | null>(null)
+  const continueButtonRef = React.useRef<HTMLButtonElement | null>(null)
 
   const onBookFlipToggle = React.useCallback((q: QuadrantId) => {
     setCardFlipped((prev) => {
@@ -100,6 +101,11 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
   useKeyboardNavigation({
     onSubmit: remainingActivities.length === 0 && onContinue ? onContinue : undefined,
   })
+
+  React.useEffect(() => {
+    if (!onContinue || remainingActivities.length !== 0) return
+    continueButtonRef.current?.focus()
+  }, [onContinue, remainingActivities.length])
 
   // Keyboard controls for cards (1, 2, 3, 4)
   // 1 = Q1 (Competition), 2 = Q3 (Chance), 3 = Q2 (Roleplay), 4 = Q4 (Chaos)
@@ -229,8 +235,9 @@ export function PostRecognitionPage({ onContinue }: PostRecognitionPageProps) {
                 All activities are placed. You can revisit the game categories anytime to reread definitions, or continue to the next section.
                 </h3>
               </div>
-              <div className="mt-auto flex w-full flex-col items-center pt-2 sm:pt-4">
+              <div className="mt-4 flex w-full flex-col items-center pt-2 sm:pt-4">
                 <button
+                  ref={continueButtonRef}
                   type="button"
                   className={cn(demoPrimaryCtaNarrowClassName, demoPrimaryCtaNativeFocusClassName, "w-full max-w-lg")}
                   onClick={() => onContinue()}

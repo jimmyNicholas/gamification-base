@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react"
 
 import { CourseNavPanel, type CoursePhase } from "@/components/course-nav-panel"
+import { PageTransitionWrapper } from "@/components/page-transition-wrapper"
+import { usePageTransition } from "@/hooks/use-page-transition"
 import {
   clearDemoMatchOutcomesSession,
   DEMO_OUTCOMES_CLEAR_EVENT,
@@ -46,6 +48,9 @@ export default function Home() {
   const [prevPhase, setPrevPhase] = useState<CoursePhase | null>(null)
   const [adminPanelOpen, setAdminPanelOpen] = useState(false)
   const [unlockedPhases, setUnlockedPhases] = useState<Set<CoursePhase>>(new Set(["intro"]))
+
+  // Page transition management
+  const { displayPhase, isVisible } = usePageTransition(phase)
 
   // Unlock a phase
   const unlockPhase = useCallback((phaseToUnlock: CoursePhase) => {
@@ -242,7 +247,7 @@ export default function Home() {
   }, [])
 
   let main: ReactNode
-  switch (phase) {
+  switch (displayPhase) {
     case "intro":
       main = <IntroPage onStartCourse={startCourseFromIntro} />
       break
@@ -312,7 +317,7 @@ export default function Home() {
       main = <ReferencesPage onContinue={finishReferences} />
       break
     default: {
-      const _exhaustive: never = phase
+      const _exhaustive: never = displayPhase
       void _exhaustive
       main = null
     }
@@ -327,7 +332,9 @@ export default function Home() {
         Skip to main content
       </a>
       <main id="main-content" className="min-h-screen min-w-0 flex-1 pt-16 md:pt-0">
-        {main}
+        <PageTransitionWrapper isVisible={isVisible}>
+          {main}
+        </PageTransitionWrapper>
       </main>
       <CourseNavPanel
         phase={phase}

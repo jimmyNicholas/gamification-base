@@ -101,6 +101,8 @@ export function AxisPage({
   const [horizontalIndex, setHorizontalIndex] = React.useState<AxisIndex>(AXIS_CENTER)
   const [verticalIndex, setVerticalIndex] = React.useState<AxisIndex>(AXIS_CENTER)
   const [quizFeedback, setQuizFeedback] = React.useState<QuizFeedback | null>(null)
+  const [isAgencyExplanationOpen, setIsAgencyExplanationOpen] = React.useState(false)
+  const [isSelfExplanationOpen, setIsSelfExplanationOpen] = React.useState(false)
 
   React.useEffect(() => {
     setStep(initialStep)
@@ -114,6 +116,19 @@ export function AxisPage({
     setHorizontalIndex(AXIS_CENTER)
     setVerticalIndex(AXIS_CENTER)
     setQuizFeedback(null)
+
+    // Open explanation on intro screens, close on quiz screens
+    if (step === "agencyIntro") {
+      setIsAgencyExplanationOpen(true)
+    } else if (step === "agencyQ1" || step === "agencyQ2") {
+      setIsAgencyExplanationOpen(false)
+    }
+
+    if (step === "selfIntro") {
+      setIsSelfExplanationOpen(true)
+    } else if (step === "selfQ1" || step === "selfQ2") {
+      setIsSelfExplanationOpen(false)
+    }
   }, [step])
 
   const isAgencyQuiz = step === "agencyQ1" || step === "agencyQ2"
@@ -220,7 +235,7 @@ export function AxisPage({
     onSubmit: handleSubmit,
     horizontalIndex,
     verticalIndex,
-    disabled: axesLocked,
+    disabled: false,
   })
 
   const model = (() => {
@@ -313,23 +328,59 @@ export function AxisPage({
           <>
             <h2 className="text-left text-xl font-bold leading-snug sm:text-xl">Agency and Fate</h2>
             <p>How much does the outcome depend on the student&apos;s skill and preparation versus randomness and chance?</p>
-            <p>
-              Agency rewards effort and builds pride, but exposes weaker students and can cause withdrawal in low-confidence
-              rooms.
-            </p>
-            <p>
-              Fate levels the field and reduces anxiety, but feels meaningless if students can&apos;t see a communicative
-              purpose behind the randomness.
-            </p>
-            <p>
-              High agency increases performance anxiety and makes proficiency gaps visible. High fate reduces anxiety and
-              equalises the room regardless of level.
-            </p>
+            <button
+              type="button"
+              onClick={() => setIsAgencyExplanationOpen(!isAgencyExplanationOpen)}
+              className="text-left text-sm font-medium text-black/70 hover:text-black/90 underline focus:outline-none focus:ring-2 focus:ring-black/20 rounded px-1 -mx-1"
+            >
+              {isAgencyExplanationOpen ? "Hide explanation" : "Show explanation"}
+            </button>
+            {isAgencyExplanationOpen ? (
+              <>
+                <p>
+                  Agency rewards effort and builds pride, but exposes weaker students and can cause withdrawal in low-confidence
+                  rooms.
+                </p>
+                <p>
+                  Fate levels the field and reduces anxiety, but feels meaningless if students can&apos;t see a communicative
+                  purpose behind the randomness.
+                </p>
+                <p>
+                  High agency increases performance anxiety and makes proficiency gaps visible. High fate reduces anxiety and
+                  equalises the room regardless of level.
+                </p>
+              </>
+            ) : null}
           </>
         )
       case "agencyQ1":
         return (
           <>
+            <button
+              type="button"
+              onClick={() => setIsAgencyExplanationOpen(!isAgencyExplanationOpen)}
+              className="text-left text-sm font-medium text-black/70 hover:text-black/90 underline focus:outline-none focus:ring-2 focus:ring-black/20 rounded px-1 -mx-1 mb-2"
+            >
+              {isAgencyExplanationOpen ? "Hide" : "Show"} Agency and Fate explanation
+            </button>
+            {isAgencyExplanationOpen ? (
+              <div className="mb-4 space-y-3 rounded-xl border border-black/10 bg-black/5 p-4">
+                <p className="text-sm font-semibold">Agency and Fate</p>
+                <p className="text-sm">How much does the outcome depend on the student&apos;s skill and preparation versus randomness and chance?</p>
+                <p className="text-sm">
+                  Agency rewards effort and builds pride, but exposes weaker students and can cause withdrawal in low-confidence
+                  rooms.
+                </p>
+                <p className="text-sm">
+                  Fate levels the field and reduces anxiety, but feels meaningless if students can&apos;t see a communicative
+                  purpose behind the randomness.
+                </p>
+                <p className="text-sm">
+                  High agency increases performance anxiety and makes proficiency gaps visible. High fate reduces anxiety and
+                  equalises the room regardless of level.
+                </p>
+              </div>
+            ) : null}
             <h2 className="text-left text-xl font-bold leading-snug sm:text-xl">Read each situation. Place your answer on the grid below.</h2>
             <p className="font-medium text-black/90">{AGENCY_Q1.title}</p>
             <p>{AGENCY_Q1.body}</p>
@@ -345,6 +396,31 @@ export function AxisPage({
       case "agencyQ2":
         return (
           <>
+            <button
+              type="button"
+              onClick={() => setIsAgencyExplanationOpen(!isAgencyExplanationOpen)}
+              className="text-left text-sm font-medium text-black/70 hover:text-black/90 underline focus:outline-none focus:ring-2 focus:ring-black/20 rounded px-1 -mx-1 mb-2"
+            >
+              {isAgencyExplanationOpen ? "Hide" : "Show"} Agency and Fate explanation
+            </button>
+            {isAgencyExplanationOpen ? (
+              <div className="mb-4 space-y-3 rounded-xl border border-black/10 bg-black/5 p-4">
+                <p className="text-sm font-semibold">Agency and Fate</p>
+                <p className="text-sm">How much does the outcome depend on the student&apos;s skill and preparation versus randomness and chance?</p>
+                <p className="text-sm">
+                  Agency rewards effort and builds pride, but exposes weaker students and can cause withdrawal in low-confidence
+                  rooms.
+                </p>
+                <p className="text-sm">
+                  Fate levels the field and reduces anxiety, but feels meaningless if students can&apos;t see a communicative
+                  purpose behind the randomness.
+                </p>
+                <p className="text-sm">
+                  High agency increases performance anxiety and makes proficiency gaps visible. High fate reduces anxiety and
+                  equalises the room regardless of level.
+                </p>
+              </div>
+            ) : null}
             <h2 className="text-left text-xl font-bold leading-snug sm:text-xl">Read each situation. Place your answer on the grid below.</h2>
             <p className="font-medium text-black/90">{AGENCY_Q2.title}</p>
             <p>{AGENCY_Q2.body}</p>
@@ -368,23 +444,62 @@ export function AxisPage({
               How much of the student&apos;s real identity is present in the activity versus temporarily suspended through
               character, role, or cognitive overwhelm?
             </p>
-            <p>
-              Self-intact produces authentic, meaningful language and real communicative investment, but requires
-              psychological safety that may not yet exist.
-            </p>
-            <p>
-              Self-dissolution lowers the cost of errors and unlocks fluency in over-monitors, but feels threatening rather
-              than liberating if introduced before trust is established.
-            </p>
-            <p>
-              Self-dissolved activities create an illusion of distance from performance. For roleplay this is conscious. For
-              chaos it is involuntary. Both suspend self-monitoring through different mechanisms.
-            </p>
+            <button
+              type="button"
+              onClick={() => setIsSelfExplanationOpen(!isSelfExplanationOpen)}
+              className="text-left text-sm font-medium text-black/70 hover:text-black/90 underline focus:outline-none focus:ring-2 focus:ring-black/20 rounded px-1 -mx-1"
+            >
+              {isSelfExplanationOpen ? "Hide explanation" : "Show explanation"}
+            </button>
+            {isSelfExplanationOpen ? (
+              <>
+                <p>
+                  Self-intact produces authentic, meaningful language and real communicative investment, but requires
+                  psychological safety that may not yet exist.
+                </p>
+                <p>
+                  Self-dissolution lowers the cost of errors and unlocks fluency in over-monitors, but feels threatening rather
+                  than liberating if introduced before trust is established.
+                </p>
+                <p>
+                  Self-dissolved activities create an illusion of distance from performance. For roleplay this is conscious. For
+                  chaos it is involuntary. Both suspend self-monitoring through different mechanisms.
+                </p>
+              </>
+            ) : null}
           </>
         )
       case "selfQ1":
         return (
           <>
+            <button
+              type="button"
+              onClick={() => setIsSelfExplanationOpen(!isSelfExplanationOpen)}
+              className="text-left text-sm font-medium text-black/70 hover:text-black/90 underline focus:outline-none focus:ring-2 focus:ring-black/20 rounded px-1 -mx-1 mb-2"
+            >
+              {isSelfExplanationOpen ? "Hide" : "Show"} Self-intact and Self-dissolved explanation
+            </button>
+            {isSelfExplanationOpen ? (
+              <div className="mb-4 space-y-3 rounded-xl border border-black/10 bg-black/5 p-4">
+                <p className="text-sm font-semibold">Self-intact and Self-dissolved</p>
+                <p className="text-sm">
+                  How much of the student&apos;s real identity is present in the activity versus temporarily suspended through
+                  character, role, or cognitive overwhelm?
+                </p>
+                <p className="text-sm">
+                  Self-intact produces authentic, meaningful language and real communicative investment, but requires
+                  psychological safety that may not yet exist.
+                </p>
+                <p className="text-sm">
+                  Self-dissolution lowers the cost of errors and unlocks fluency in over-monitors, but feels threatening rather
+                  than liberating if introduced before trust is established.
+                </p>
+                <p className="text-sm">
+                  Self-dissolved activities create an illusion of distance from performance. For roleplay this is conscious. For
+                  chaos it is involuntary. Both suspend self-monitoring through different mechanisms.
+                </p>
+              </div>
+            ) : null}
             <h2 className="text-left text-xl font-bold leading-snug sm:text-xl">Read each situation. Place your answer on the grid below.</h2>
             <p className="font-medium text-black/90">{SELF_Q1.title}</p>
             <p>{SELF_Q1.body}</p>
@@ -405,6 +520,34 @@ export function AxisPage({
       case "selfQ2":
         return (
           <>
+            <button
+              type="button"
+              onClick={() => setIsSelfExplanationOpen(!isSelfExplanationOpen)}
+              className="text-left text-sm font-medium text-black/70 hover:text-black/90 underline focus:outline-none focus:ring-2 focus:ring-black/20 rounded px-1 -mx-1 mb-2"
+            >
+              {isSelfExplanationOpen ? "Hide" : "Show"} Self-intact and Self-dissolved explanation
+            </button>
+            {isSelfExplanationOpen ? (
+              <div className="mb-4 space-y-3 rounded-xl border border-black/10 bg-black/5 p-4">
+                <p className="text-sm font-semibold">Self-intact and Self-dissolved</p>
+                <p className="text-sm">
+                  How much of the student&apos;s real identity is present in the activity versus temporarily suspended through
+                  character, role, or cognitive overwhelm?
+                </p>
+                <p className="text-sm">
+                  Self-intact produces authentic, meaningful language and real communicative investment, but requires
+                  psychological safety that may not yet exist.
+                </p>
+                <p className="text-sm">
+                  Self-dissolution lowers the cost of errors and unlocks fluency in over-monitors, but feels threatening rather
+                  than liberating if introduced before trust is established.
+                </p>
+                <p className="text-sm">
+                  Self-dissolved activities create an illusion of distance from performance. For roleplay this is conscious. For
+                  chaos it is involuntary. Both suspend self-monitoring through different mechanisms.
+                </p>
+              </div>
+            ) : null}
             <h2 className="text-left text-xl font-bold leading-snug sm:text-xl">Read each situation. Place your answer on the grid below.</h2>
             <p className="font-medium text-black/90">{SELF_Q2.title}</p>
             <p>{SELF_Q2.body}</p>
@@ -646,14 +789,15 @@ export function AxisPage({
           <div className="flex w-full min-w-0 justify-center sm:scale-90 md:scale-100">{model}</div>
           {primaryCta ? (
               <div className="mt-auto flex w-full flex-col items-center gap-3 pt-2 sm:pt-4">
-                <KeyboardHints
-                  axisMode={
-                    isAgencyQuiz ? "horizontal" :
-                    isSelfQuiz ? "vertical" :
-                    "none"
-                  }
-                  className="mb-1"
-                />
+                <div className="mb-1 min-h-6 flex items-center">
+                  <KeyboardHints
+                    axisMode={
+                      isAgencyQuiz ? "horizontal" :
+                      isSelfQuiz ? "vertical" :
+                      "none"
+                    }
+                  />
+                </div>
                 {primaryCta}
               </div>
             ) : null}
