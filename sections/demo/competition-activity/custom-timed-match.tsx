@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { formatMmSs } from "@/lib/format-mm-ss"
@@ -229,6 +229,19 @@ export function CustomTimedMatch({
     return merged.sort((a, b) => a.timeMs - b.timeMs).slice(0, LEADERBOARD_VISIBLE_ROWS)
   }, [leaderboard, gameComplete, finalTimeMs])
 
+  const handleNextGame = useCallback(() => {
+    const t = finalTimeMs ?? lastCompletedTimeMsRef.current
+    const animalEmoji = pickAnimalEmojiForOutcomes(leftItems)
+    onNextGame?.(t != null ? { timeMs: t, animalEmoji } : undefined)
+  }, [onNextGame, finalTimeMs, leftItems])
+
+  const nextGameCompletionRef = useRef<HTMLButtonElement | null>(null)
+
+  useLayoutEffect(() => {
+    if (!gameComplete || finalTimeMs == null || !onNextGame) return
+    nextGameCompletionRef.current?.focus({ preventScroll: true })
+  }, [gameComplete, finalTimeMs, onNextGame])
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null
@@ -240,6 +253,18 @@ export function CustomTimedMatch({
       if (gameComplete && key === 'p') {
         event.preventDefault()
         playAgain()
+        return
+      }
+
+      // Enter: advance only when focus is not on another primary button (e.g. Play again).
+      // Buttons with data-next-game rely on native Enter → click; skip to avoid double-firing.
+      if (gameComplete && key === "Enter" && onNextGame) {
+        if (event.repeat) return
+        const el = event.target as HTMLElement | null
+        if (el?.closest("[data-next-game]")) return
+        if (el?.tagName === "BUTTON") return
+        event.preventDefault()
+        handleNextGame()
         return
       }
 
@@ -265,7 +290,17 @@ export function CustomTimedMatch({
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [gameComplete, shuffledLeft, shuffledRight, matchedMatchIds, toggleLeft, toggleRight, playAgain])
+  }, [
+    gameComplete,
+    shuffledLeft,
+    shuffledRight,
+    matchedMatchIds,
+    toggleLeft,
+    toggleRight,
+    playAgain,
+    onNextGame,
+    handleNextGame,
+  ])
 
   const timerText =
     gameComplete && finalTimeMs != null
@@ -342,12 +377,9 @@ export function CustomTimedMatch({
               <Button
                 type="button"
                 size="lg"
+                data-next-game
                 className={demoPrimaryCtaConstrainedClassName}
-                onClick={() => {
-                  const t = finalTimeMs ?? lastCompletedTimeMsRef.current
-                  const animalEmoji = pickAnimalEmojiForOutcomes(leftItems)
-                  onNextGame?.(t != null ? { timeMs: t, animalEmoji } : undefined)
-                }}
+                onClick={handleNextGame}
               >
                 Next game
               </Button>
@@ -426,14 +458,12 @@ export function CustomTimedMatch({
           {onNextGame ? (
             <div className="flex w-full justify-center">
               <Button
+                ref={nextGameCompletionRef}
                 type="button"
                 size="lg"
+                data-next-game
                 className={demoPrimaryCtaConstrainedClassName}
-                onClick={() => {
-                  const t = finalTimeMs ?? lastCompletedTimeMsRef.current
-                  const animalEmoji = pickAnimalEmojiForOutcomes(leftItems)
-                  onNextGame?.(t != null ? { timeMs: t, animalEmoji } : undefined)
-                }}
+                onClick={handleNextGame}
               >
                 Next game <KeyboardKey keyLabel="ENTER" className="ml-2" />
               </Button>

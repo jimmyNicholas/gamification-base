@@ -91,14 +91,14 @@ export function CourseNavPanel({ phase, onNavigate, adminPanelOpen, onToggleAdmi
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="hidden h-11 w-11 items-center justify-center rounded-md text-black/60 hover:bg-black/6 hover:text-black md:mb-1 md:flex"
+          className="mb-1 flex h-11 w-11 items-center justify-center rounded-md text-black/60 hover:bg-black/6 hover:text-black"
           aria-label="Hide navigation"
         >
           <icons.chevronRight className="size-3.5" aria-hidden />
         </button>
 
         <nav
-          className="flex flex-1 flex-row items-center gap-1 md:flex-col md:pt-1"
+          className="flex flex-1 flex-col items-center gap-1 pt-1"
           aria-label="Course sections"
         >
           {NAV_ITEMS.map(({ phase: id, label, Icon }) => {

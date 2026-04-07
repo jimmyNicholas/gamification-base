@@ -10,6 +10,9 @@ export type ChanceQuadrant = 1 | 2 | 3 | 4
 const QUADRANT_COLORS = ["#2563eb", "#dc2626", "#16a34a", "#ca8a04"] as const
 
 /** Wedge index order matches SVG paths: NW, NE, SE, SW → labels 1, 2, 4, 3. */
+/** Ignore window-level Enter/Space right after mount so a key that finished the card grid cannot start a spin. */
+const GLOBAL_SPIN_KEY_COOLDOWN_MS = 400
+
 const QUADRANT_TO_WEDGE: Record<ChanceQuadrant, 0 | 1 | 2 | 3> = {
   1: 0,
   2: 1,
@@ -177,6 +180,12 @@ export function ChanceWheel({
   const [spinning, setSpinning] = React.useState(false)
   const rotationRef = React.useRef(0)
   const tickRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
+  const ignoreGlobalSpinKeysUntilRef = React.useRef(Number.POSITIVE_INFINITY)
+
+  React.useLayoutEffect(() => {
+    if (!enableGlobalKeyboard) return
+    ignoreGlobalSpinKeysUntilRef.current = performance.now() + GLOBAL_SPIN_KEY_COOLDOWN_MS
+  }, [enableGlobalKeyboard])
 
   React.useEffect(() => {
     rotationRef.current = rotation
@@ -237,14 +246,15 @@ export function ChanceWheel({
     if (!enableGlobalKeyboard || disabled || spinning) return
 
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" || event.key === " ") {
-        // Only trigger if not typing in an input/textarea
-        const target = event.target as HTMLElement
-        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
+      if (event.key !== "Enter" && event.key !== " ") return
+      if (event.repeat) return
+      if (performance.now() < ignoreGlobalSpinKeysUntilRef.current) return
+      // Only trigger if not typing in an input/textarea
+      const target = event.target as HTMLElement
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return
 
-        event.preventDefault()
-        startSpin()
-      }
+      event.preventDefault()
+      startSpin()
     }
 
     window.addEventListener("keydown", handleGlobalKeyDown)
@@ -253,10 +263,10 @@ export function ChanceWheel({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault()
-        startSpin()
-      }
+      if (event.key !== "Enter" && event.key !== " ") return
+      if (event.repeat) return
+      event.preventDefault()
+      startSpin()
     },
     [startSpin]
   )

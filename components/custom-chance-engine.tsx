@@ -67,12 +67,12 @@ function poolNavigate(index: number, key: string): number {
   return nr * POOL_COLS + nc
 }
 
-function findNextAvailablePoolIndex(start: number, picked: Set<string>, cards: PlayingCard[]): number {
-  for (let k = 0; k < POOL_SIZE; k++) {
-    const j = (start + k) % POOL_SIZE
-    if (!picked.has(cards[j]!.id)) return j
+/** First unpicked index in row-major order (top-left → bottom-right). */
+function findFirstAvailablePoolIndex(picked: Set<string>, cards: PlayingCard[]): number {
+  for (let i = 0; i < POOL_SIZE; i++) {
+    if (!picked.has(cards[i]!.id)) return i
   }
-  return start
+  return 0
 }
 
 function QuadrantSlotGrid({
@@ -167,15 +167,12 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
   }, [focusedPoolIndex])
 
   const didAutoFocusPool = React.useRef(false)
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (phase !== "picking" || didAutoFocusPool.current) return
     didAutoFocusPool.current = true
     setFocusedPoolIndex(0)
     focusedPoolIndexRef.current = 0
-    const id = requestAnimationFrame(() => {
-      poolGridRef.current?.focus({ preventScroll: true })
-    })
-    return () => cancelAnimationFrame(id)
+    poolGridRef.current?.focus({ preventScroll: true })
   }, [phase])
 
   const pickedSet = React.useMemo(() => new Set(pickedIds), [pickedIds])
@@ -204,10 +201,9 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
       const next = [...pickedIds, id]
       const nextSet = new Set(next)
       setPickedIds(next)
-      const pickedIdx = deck.findIndex((c) => c.id === id)
-      if (pickedIdx >= 0) {
-        setFocusedPoolIndex(findNextAvailablePoolIndex(pickedIdx + 1, nextSet, deck))
-      }
+      const nextFocus = findFirstAvailablePoolIndex(nextSet, deck)
+      setFocusedPoolIndex(nextFocus)
+      focusedPoolIndexRef.current = nextFocus
       if (next.length === 4) {
         const c = resolveCandidateQuestions(next as [string, string, string, string])
         setCandidates(c)
@@ -216,19 +212,6 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
     },
     [phase, pickedIds, pickedSet, deck]
   )
-
-  // Auto-select first card when entering picking phase
-  const didAutoSelectFirst = React.useRef(false)
-  React.useEffect(() => {
-    if (phase !== "picking" || didAutoSelectFirst.current || pickedIds.length > 0) return
-    if (deck.length > 0) {
-      didAutoSelectFirst.current = true
-      const id = requestAnimationFrame(() => {
-        pickCard(deck[0]!.id)
-      })
-      return () => cancelAnimationFrame(id)
-    }
-  }, [phase, pickedIds.length, deck, pickCard])
 
   const onPoolKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -254,6 +237,7 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
       }
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault()
+        e.stopPropagation()
         const idx = focusedPoolIndexRef.current
         const card = deck[idx]
         if (card && !pickedSet.has(card.id) && pickedIds.length < 4) {
@@ -357,7 +341,10 @@ export function CustomChanceEngine({ className, unlockSignalId, onContinueAfterR
               <div className="grid grid-cols-4 gap-2">
                 {deck.map((card, i) => {
                   const taken = pickedSet.has(card.id)
-                  const isActive = poolHasFocus && focusedPoolIndex === i
+                  const isActive =
+                    focusedPoolIndex === i &&
+                    !taken &&
+                    (poolHasFocus || (pickedIds.length === 0 && i === 0))
                   return (
                     <button
                       key={card.id}

@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { QuadrantAxesModelV2, type CardContent } from "@/components/quadrant-axes-model-v2"
@@ -15,6 +16,10 @@ import {
 } from "@/sections/demo/demo-ui"
 import type { QuadrantId } from "@/lib/storyboard-component-contracts"
 import { TwoColumnActivityStageLayout } from "@/layouts/TwoColumnActivityStageLayout"
+import {
+  MATCH_GRID_LEFT_KEY_TO_INDEX,
+  MATCH_GRID_RIGHT_KEY_TO_INDEX,
+} from "@/sections/demo/match-grid-keys"
 
 /** Same iteration order as `quadrantsInOrder` in `QuadrantAxesModel` (grid placement). */
 const MATCH_REVEAL_CELL_ORDER: readonly QuadrantId[] = ["Q1", "Q3", "Q2", "Q4"]
@@ -77,6 +82,30 @@ export function RecognitionPage({ outcomes, onComplete, onMatchMistake }: Recogn
     []
   )
 
+  /** Visual grid order matches keys 1–4 / 5–8 (see `MATCH_REVEAL_CELL_ORDER`). */
+  const leftKeyCornerBadges = useMemo((): Partial<Record<QuadrantId, ReactNode>> => {
+    const className =
+      "pointer-events-none absolute right-2 top-2 z-10 select-none text-xs font-medium tabular-nums text-neutral-400 sm:text-sm"
+    return {
+      Q1: <span className={className} aria-hidden>1</span>,
+      Q3: <span className={className} aria-hidden>2</span>,
+      Q2: <span className={className} aria-hidden>3</span>,
+      Q4: <span className={className} aria-hidden>4</span>,
+    }
+  }, [])
+
+  const rightKeyCornerBadges = useMemo((): Partial<Record<QuadrantId, ReactNode>> | undefined => {
+    if (selectedOutcomeCell == null) return undefined
+    const className =
+      "pointer-events-none absolute right-2 top-2 z-10 select-none text-xs font-medium tabular-nums text-black sm:text-sm"
+    return {
+      Q1: <span className={className} aria-hidden>5</span>,
+      Q3: <span className={className} aria-hidden>6</span>,
+      Q2: <span className={className} aria-hidden>7</span>,
+      Q4: <span className={className} aria-hidden>8</span>,
+    }
+  }, [selectedOutcomeCell])
+
   const handleMatchRevealRightClick = useCallback(
     (rightCell: QuadrantId) => {
       if (selectedOutcomeCell == null) return
@@ -102,6 +131,56 @@ export function RecognitionPage({ outcomes, onComplete, onMatchMistake }: Recogn
     queueMicrotask(() => onComplete?.())
   }, [allMatched, onComplete])
 
+  useEffect(() => {
+    if (allMatched) return
+
+    const slotKeyFromEvent = (e: KeyboardEvent): string | null => {
+      const k = e.key
+      if (k.length === 1 && k >= "1" && k <= "8") return k
+      const c = e.code
+      if (c.startsWith("Numpad") && c.length === 7) {
+        const d = c.slice(6)
+        if (d >= "1" && d <= "8") return d
+      }
+      return null
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return
+      const active = document.activeElement
+      if (
+        active &&
+        (active.tagName === "INPUT" ||
+          active.tagName === "TEXTAREA" ||
+          (active as HTMLElement).isContentEditable)
+      ) {
+        return
+      }
+
+      const slotKey = slotKeyFromEvent(e)
+      if (!slotKey) return
+
+      const leftIdx = MATCH_GRID_LEFT_KEY_TO_INDEX[slotKey]
+      if (leftIdx !== undefined) {
+        const q = MATCH_REVEAL_CELL_ORDER[leftIdx]!
+        if (matchedLeftCells.has(q)) return
+        e.preventDefault()
+        setSelectedOutcomeCell((prev) => (prev === q ? null : q))
+        return
+      }
+
+      const rightIdx = MATCH_GRID_RIGHT_KEY_TO_INDEX[slotKey]
+      if (rightIdx !== undefined) {
+        if (selectedOutcomeCell == null) return
+        e.preventDefault()
+        handleMatchRevealRightClick(MATCH_REVEAL_CELL_ORDER[rightIdx]!)
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [allMatched, matchedLeftCells, selectedOutcomeCell, handleMatchRevealRightClick])
+
   return (
     <RecogLayout>
       <TwoColumnActivityStageLayout
@@ -118,6 +197,7 @@ export function RecognitionPage({ outcomes, onComplete, onMatchMistake }: Recogn
               mode="matchReveal"
               className="p-8 md:p-16 lg:p-18"
               cards={leftMatchRevealCards}
+              cardCornerBadge={leftKeyCornerBadges}
               cardState={{
                 Q1: matchedLeftCells.has("Q1") ? "invisible" : "black-white",
                 Q2: matchedLeftCells.has("Q2") ? "invisible" : "black-white",
@@ -141,6 +221,7 @@ export function RecognitionPage({ outcomes, onComplete, onMatchMistake }: Recogn
                 clickable: false,
               }}
               cards={categoryCards}
+              cardCornerBadge={rightKeyCornerBadges}
               cardState={{
                 Q1: matchedRightCells.has("Q1") ? "activeColor" : selectedOutcomeCell != null ? "grey" : "transparent",
                 Q2: matchedRightCells.has("Q2") ? "activeColor" : selectedOutcomeCell != null ? "grey" : "transparent",

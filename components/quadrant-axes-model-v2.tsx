@@ -44,6 +44,11 @@ export type QuadrantAxesModelV2Props = {
   onCardFlip?: (q: QuadrantId) => void
   /** Extra content rendered at the bottom of the front face (flipCard mode). */
   cardFrontExtra?: Partial<Record<QuadrantId, React.ReactNode>>
+  /**
+   * Optional corner overlay per quadrant (e.g. keyboard hints). Rendered above tile content;
+   * keep nodes absolutely positioned.
+   */
+  cardCornerBadge?: Partial<Record<QuadrantId, React.ReactNode>>
   /** Called when a card is clicked (matchReveal / general interaction). */
   onCardClick?: (q: QuadrantId) => void
 
@@ -186,6 +191,7 @@ export function QuadrantAxesModelV2({
   cardFlipped: cardFlippedControlled,
   onCardFlip,
   cardFrontExtra,
+  cardCornerBadge,
   onCardClick,
   selectedActivityId = null,
   onActivityDrop,
@@ -472,6 +478,8 @@ export function QuadrantAxesModelV2({
             </span>
           ) : null
 
+          const extraCornerBadge = cardCornerBadge?.[q]
+
           return (
             <div
               key={q}
@@ -499,6 +507,7 @@ export function QuadrantAxesModelV2({
               }
             >
               {numberBadge}
+              {extraCornerBadge}
               {isFlipCard && isFlipped ? flipCardBack : resolvedContent}
             </div>
           )
