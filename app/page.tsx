@@ -319,13 +319,16 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col md:flex-row">
+    <div className="flex min-h-screen w-full flex-row">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
       >
         Skip to main content
       </a>
+      <main id="main-content" className="min-h-screen min-w-0 flex-1 pt-16 md:pt-0">
+        {main}
+      </main>
       <CourseNavPanel
         phase={phase}
         onNavigate={navigateToPhase}
@@ -333,9 +336,6 @@ export default function Home() {
         onToggleAdminPanel={() => setAdminPanelOpen(!adminPanelOpen)}
         unlockedPhases={unlockedPhases}
       />
-      <main id="main-content" className="min-h-screen min-w-0 flex-1 pt-16 md:pt-0">
-        {main}
-      </main>
       <AdminPage
         currentPhase={phase}
         onNavigate={navigateToPhase}
